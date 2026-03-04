@@ -2,6 +2,7 @@ import AppKit
 import Carbon.HIToolbox
 import Foundation
 
+@MainActor
 final class AppCoordinator: NSObject {
     private let overlayManager = OverlayManager()
     private let accessibilityService = AccessibilityService()
@@ -143,7 +144,7 @@ final class AppCoordinator: NSObject {
             keyCode: UInt32(kVK_ANSI_B),
             modifiers: modifiers
         ) { [weak self] in
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.toggleOverlay()
             }
         }
@@ -153,7 +154,7 @@ final class AppCoordinator: NSObject {
             keyCode: UInt32(kVK_ANSI_L),
             modifiers: modifiers
         ) { [weak self] in
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.lockCurrentWindow()
             }
         }
@@ -163,7 +164,7 @@ final class AppCoordinator: NSObject {
             keyCode: UInt32(kVK_Escape),
             modifiers: modifiers
         ) { [weak self] in
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.forceDisableOverlay()
             }
         }
@@ -178,13 +179,22 @@ final class AppCoordinator: NSObject {
     private func ensureRefreshLoopRunning() {
         guard refreshTimer == nil else { return }
 
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
-            self?.refreshOverlayIfNeeded()
-        }
+        refreshTimer = Timer.scheduledTimer(
+            timeInterval: 0.3,
+            target: self,
+            selector: #selector(handleRefreshTimer(_:)),
+            userInfo: nil,
+            repeats: true
+        )
 
         if let refreshTimer {
             RunLoop.main.add(refreshTimer, forMode: .common)
         }
+    }
+
+    @objc
+    private func handleRefreshTimer(_ timer: Timer) {
+        refreshOverlayIfNeeded()
     }
 
     private func stopRefreshLoop() {

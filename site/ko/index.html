@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AntiADHD는 macOS 메뉴바에서 동작하는 Focus Mask 앱으로, 시선 분산을 줄이고 현재 작업 창에 집중할 수 있게 도와줍니다.">
+  <meta name="theme-color" content="#10131f">
+  <link rel="canonical" href="https://parrotnavy.github.io/anti-adhd/ko/">
+  <title>AntiADHD - macOS 집중 마스크</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script type="text/javascript">
+    (() => {
+      if (typeof window.clarity !== "function") {
+        window.clarity = (...args) => {
+          window.clarity.q = window.clarity.q || [];
+          window.clarity.q.push(args);
+        };
+      }
+
+      const clarityScript = document.createElement("script");
+      clarityScript.async = true;
+      clarityScript.src = "https://www.clarity.ms/tag/__CLARITY_PROJECT_ID__";
+
+      const firstScript = document.getElementsByTagName("script")[0];
+      const parentNode = firstScript?.parentNode;
+      if (parentNode) {
+        parentNode.insertBefore(clarityScript, firstScript);
+      } else {
+        document.head.appendChild(clarityScript);
+      }
+    })();
+  </script>
+</head>
+<body data-clarity-page="home" data-clarity-locale="ko">
+  <div class="page-glow" aria-hidden="true"></div>
+  <header class="site-header">
+    <div class="shell header-row">
+      <a href="../index.html" class="logo" data-clarity-event="nav_logo_click">AntiADHD</a>
+      <nav class="site-nav" aria-label="기본 탐색">
+        <a href="#modes">모드</a>
+        <a href="#hotkeys">단축키</a>
+        <a href="#permissions">권한</a>
+        <a href="#download" class="nav-cta" data-clarity-event="nav_download_click">다운로드</a>
+      </nav>
+      <a href="../index.html" class="locale-link" lang="en" data-clarity-event="nav_locale_en_click">EN</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero section-space">
+      <div class="shell hero-grid">
+        <div class="hero-copy reveal r1">
+          <p class="eyebrow">macOS Focus Utility</p>
+          <h1>시야 잡음을 줄이고<br>지금 필요한 창만 남기세요.</h1>
+          <p class="lead">AntiADHD는 macOS 메뉴바에서 동작하는 Focus Mask 앱입니다. 화면의 나머지 영역을 마스킹해 현재 작업 창에 집중할 수 있도록 도와줍니다.</p>
+          <div class="hero-actions" id="download">
+            <a class="btn-download" href="https://github.com/parrotnavy/anti-adhd/releases" data-download-os="macos" data-clarity-event="download_macos_click">
+              <span class="btn-title">macOS 다운로드</span>
+              <span class="btn-sub">GitHub Releases 기본 링크</span>
+            </a>
+            <a class="btn-secondary" href="https://github.com/parrotnavy/anti-adhd/releases" target="_blank" rel="noopener" data-clarity-event="download_release_notes_click">릴리스 보기</a>
+          </div>
+        </div>
+        <aside class="hero-panel reveal r2" aria-label="기능 요약">
+          <h2>AntiADHD란?</h2>
+          <p>전역 단축키로 오버레이를 제어하는 경량 메뉴바 앱이며, 창 단위 집중 모드를 지원합니다.</p>
+          <ul>
+            <li>macOS 13+ 지원</li>
+            <li>Dock 아이콘 없이 액세서리 앱으로 동작</li>
+            <li>권한 미허용 시 안전하게 폴백</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="modes" class="section-space">
+      <div class="shell">
+        <div class="section-head reveal r1">
+          <p class="eyebrow">모드</p>
+          <h2>집중 방식에 맞춰 선택하세요</h2>
+        </div>
+        <div class="card-grid">
+          <article class="focus-card reveal r1">
+            <h3>Current Display</h3>
+            <p>마우스가 있는 모니터만 보이게 하고, 나머지 디스플레이는 마스킹합니다.</p>
+          </article>
+          <article class="focus-card reveal r2">
+            <h3>Focused Window</h3>
+            <p>현재 포커스 창만 강조합니다. 비선택 영역은 Freeze, Black Overlay, Blur 방식으로 처리할 수 있습니다.</p>
+          </article>
+          <article class="focus-card reveal r3">
+            <h3>Locked Window</h3>
+            <p>선택한 창을 고정 대상으로 유지하여 커서 이동과 관계없이 계속 보이게 합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="hotkeys" class="section-space section-alt">
+      <div class="shell">
+        <div class="section-head reveal r1">
+          <p class="eyebrow">단축키</p>
+          <h2>작업 흐름을 끊지 않는 제어</h2>
+        </div>
+        <div class="hotkey-list">
+          <div class="hotkey-item reveal r1">
+            <kbd>⌥⌘B</kbd>
+            <p>집중 마스크 On/Off 전환</p>
+          </div>
+          <div class="hotkey-item reveal r2">
+            <kbd>⌥⌘L</kbd>
+            <p>현재 포커스 창 잠금</p>
+          </div>
+          <div class="hotkey-item reveal r3">
+            <kbd>⌥⌘⎋</kbd>
+            <p>긴급 해제로 오버레이 즉시 해제</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="permissions" class="section-space">
+      <div class="shell permission-wrap reveal r1">
+        <p class="eyebrow">권한</p>
+        <h2>창 모드 사용 시 Accessibility 권한 필요</h2>
+        <p>Focused Window와 Locked Window 모드는 손쉬운 사용(Accessibility) 권한이 필요합니다. 권한이 없으면 앱은 자동으로 Current Display 모드로 전환됩니다.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-row">
+      <p>&copy; 2026 AntiADHD</p>
+      <div class="footer-links">
+        <a href="../privacy.html" data-clarity-event="footer_privacy_click">개인정보 처리방침</a>
+        <a href="../terms.html" data-clarity-event="footer_terms_click">이용약관</a>
+        <a href="https://github.com/parrotnavy/anti-adhd" target="_blank" rel="noopener" data-clarity-event="footer_github_click">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/clarity-events.js"></script>
+  <script src="../assets/js/download-latest-macos.js"></script>
+</body>
+</html>

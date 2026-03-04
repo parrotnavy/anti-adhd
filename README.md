@@ -42,3 +42,43 @@ swift run
 ## 알려진 제한
 - 일부 앱(보안/특수 렌더링)은 창 프레임 추적이 제한될 수 있습니다.
 - Spaces/풀스크린 환경에서 오버레이 우선순위가 앱별로 다를 수 있습니다.
+
+## 패키징 (DMG)
+로컬에서 DMG를 만들려면 아래 스크립트를 실행합니다.
+
+```bash
+./scripts/package_dmg.sh X.Y.Z
+```
+
+- 생성물: `dist/AntiADHD-X.Y.Z.dmg`, `dist/SHA256SUMS.txt`
+- VERSION 형식: `X.Y.Z`, `X.Y.Z-rc.1`, `main-abcdef0`
+
+CI/릴리즈에서도 동일한 스크립트를 사용합니다: `.github/workflows/ci.yml`, `.github/workflows/release.yml`
+
+## 릴리즈 (GitHub Release)
+릴리즈 워크플로우: `.github/workflows/release.yml`
+
+태그를 push하면 자동으로 실행되어 DMG와 체크섬을 GitHub Release에 업로드합니다.
+
+```bash
+git tag vX.Y.Z && git push origin vX.Y.Z
+```
+
+- 업로드 아티팩트: `dist/AntiADHD-X.Y.Z.dmg`, `dist/SHA256SUMS.txt`
+- 릴리즈 노트는 `scripts/generate_release_notes.sh` 로 생성됩니다.
+
+## GitHub Pages (사이트 배포)
+Pages 배포 워크플로우: `.github/workflows/deploy-pages.yml`
+
+- Settings > Pages > Build and deployment 에서 Source를 `GitHub Actions` 로 설정하세요.
+- `site/` 디렉터리가 그대로 배포됩니다.
+- `site/.nojekyll` 파일은 반드시 커밋되어 있어야 합니다.
+
+## Clarity 설정
+`deploy-pages.yml` 는 `CLARITY_PROJECT_ID` 가 필요합니다.
+
+- Actions variable `CLARITY_PROJECT_ID` (권장) 또는 secret `CLARITY_PROJECT_ID` 를 설정하세요.
+- `site/*.html` 안의 `__CLARITY_PROJECT_ID__` 플레이스홀더가 배포 시 치환됩니다.
+
+분석 수집과 동의, 개인정보 관련 안내는 `site/privacy.html` (및 `site/terms.html`) 에 반영하세요.
+Microsoft Clarity 문서: https://learn.microsoft.com/en-us/clarity/

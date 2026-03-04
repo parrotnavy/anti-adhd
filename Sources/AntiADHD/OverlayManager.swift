@@ -107,33 +107,36 @@ private final class OverlayWindow: NSWindow {
     }
 }
 
+@MainActor
 final class OverlayManager {
     private let focusedCutoutCornerRadius: CGFloat = 12
     private var windowsByScreenID: [Int: OverlayWindow] = [:]
     private var frozenSnapshotsByScreenID: [Int: CGImage] = [:]
-    private var screenChangeObserver: NSObjectProtocol?
     private(set) var isEnabled = false
 
     init() {
         rebuildWindowsIfNeeded()
 
-        screenChangeObserver = NotificationCenter.default.addObserver(
-            forName: NSApplication.didChangeScreenParametersNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.invalidateFrozenSnapshots()
-            self?.rebuildWindowsIfNeeded()
-        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleScreenParametersChanged(_:)),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
     }
 
     deinit {
-        if let screenChangeObserver {
-            NotificationCenter.default.removeObserver(screenChangeObserver)
-        }
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
+    }
 
-        windowsByScreenID.values.forEach { $0.close() }
-        windowsByScreenID.removeAll()
+    @objc
+    private func handleScreenParametersChanged(_ notification: Notification) {
+        invalidateFrozenSnapshots()
+        rebuildWindowsIfNeeded()
     }
 
     func setEnabled(_ enabled: Bool) {

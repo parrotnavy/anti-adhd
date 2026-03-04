@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://parrotnavy.github.io/anti-adhd/sitemap.xml

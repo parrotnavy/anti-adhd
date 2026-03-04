@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AntiADHD is a macOS menu bar Focus Mask that helps you reduce visual distractions and stay locked on the work window that matters.">
+  <meta name="theme-color" content="#10131f">
+  <link rel="canonical" href="https://parrotnavy.github.io/anti-adhd/">
+  <title>AntiADHD - Focus Mask for macOS</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="text/javascript">
+    (() => {
+      if (typeof window.clarity !== "function") {
+        window.clarity = (...args) => {
+          window.clarity.q = window.clarity.q || [];
+          window.clarity.q.push(args);
+        };
+      }
+
+      const clarityScript = document.createElement("script");
+      clarityScript.async = true;
+      clarityScript.src = "https://www.clarity.ms/tag/__CLARITY_PROJECT_ID__";
+
+      const firstScript = document.getElementsByTagName("script")[0];
+      const parentNode = firstScript?.parentNode;
+      if (parentNode) {
+        parentNode.insertBefore(clarityScript, firstScript);
+      } else {
+        document.head.appendChild(clarityScript);
+      }
+    })();
+  </script>
+</head>
+<body data-clarity-page="home" data-clarity-locale="en">
+  <div class="page-glow" aria-hidden="true"></div>
+  <header class="site-header">
+    <div class="shell header-row">
+      <a href="index.html" class="logo" data-clarity-event="nav_logo_click">AntiADHD</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#modes">Modes</a>
+        <a href="#hotkeys">Hotkeys</a>
+        <a href="#permissions">Permissions</a>
+        <a href="#download" class="nav-cta" data-clarity-event="nav_download_click">Download</a>
+      </nav>
+      <a href="ko/" class="locale-link" lang="ko" data-clarity-event="nav_locale_ko_click">한국어</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero section-space">
+      <div class="shell hero-grid">
+        <div class="hero-copy reveal r1">
+          <p class="eyebrow">macOS Focus Utility</p>
+          <h1>Block visual noise.<br>Keep one window in your lane.</h1>
+          <p class="lead">AntiADHD is a menu bar Focus Mask for macOS. It dims the rest of your desktop so your attention stays on the window you are using right now.</p>
+          <div class="hero-actions" id="download">
+            <a class="btn-download" href="https://github.com/parrotnavy/anti-adhd/releases" data-download-os="macos" data-clarity-event="download_macos_click">
+              <span class="btn-title">Download for macOS</span>
+              <span class="btn-sub">GitHub Releases fallback</span>
+            </a>
+            <a class="btn-secondary" href="https://github.com/parrotnavy/anti-adhd/releases" target="_blank" rel="noopener" data-clarity-event="download_release_notes_click">View Releases</a>
+          </div>
+        </div>
+        <aside class="hero-panel reveal r2" aria-label="Feature snapshot">
+          <h2>What AntiADHD is</h2>
+          <p>A lightweight accessory app that lives in the menu bar and toggles a focus mask with global hotkeys.</p>
+          <ul>
+            <li>Built for macOS 13+</li>
+            <li>Works as an accessory app, no dock clutter</li>
+            <li>Falls back safely when permissions are missing</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="modes" class="section-space">
+      <div class="shell">
+        <div class="section-head reveal r1">
+          <p class="eyebrow">Modes</p>
+          <h2>Choose the way you want to focus</h2>
+        </div>
+        <div class="card-grid">
+          <article class="focus-card reveal r1">
+            <h3>Current Display</h3>
+            <p>Keep only the monitor under your mouse fully visible while other displays stay masked.</p>
+          </article>
+          <article class="focus-card reveal r2">
+            <h3>Focused Window</h3>
+            <p>Highlight the active window only. For non-selected regions you can use Freeze, Black Overlay, or Blur.</p>
+          </article>
+          <article class="focus-card reveal r3">
+            <h3>Locked Window</h3>
+            <p>Pin visibility to one chosen window and keep it visible while you move your cursor around.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="hotkeys" class="section-space section-alt">
+      <div class="shell">
+        <div class="section-head reveal r1">
+          <p class="eyebrow">Hotkeys</p>
+          <h2>Quick control without leaving flow</h2>
+        </div>
+        <div class="hotkey-list">
+          <div class="hotkey-item reveal r1">
+            <kbd>⌥⌘B</kbd>
+            <p>Toggle focus mask on and off.</p>
+          </div>
+          <div class="hotkey-item reveal r2">
+            <kbd>⌥⌘L</kbd>
+            <p>Lock the currently focused window.</p>
+          </div>
+          <div class="hotkey-item reveal r3">
+            <kbd>⌥⌘⎋</kbd>
+            <p>Emergency off to instantly clear overlays.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="permissions" class="section-space">
+      <div class="shell permission-wrap reveal r1">
+        <p class="eyebrow">Permissions</p>
+        <h2>Accessibility is required for window modes</h2>
+        <p>Focused Window and Locked Window need macOS Accessibility permission. If permission is not granted, AntiADHD automatically falls back to Current Display mode.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-row">
+      <p>&copy; 2026 AntiADHD</p>
+      <div class="footer-links">
+        <a href="privacy.html" data-clarity-event="footer_privacy_click">Privacy</a>
+        <a href="terms.html" data-clarity-event="footer_terms_click">Terms</a>
+        <a href="https://github.com/parrotnavy/anti-adhd" target="_blank" rel="noopener" data-clarity-event="footer_github_click">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/clarity-events.js"></script>
+  <script src="assets/js/download-latest-macos.js"></script>
+</body>
+</html>

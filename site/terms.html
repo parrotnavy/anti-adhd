@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Terms of use for the AntiADHD website and release downloads.">
+  <meta name="theme-color" content="#10131f">
+  <link rel="canonical" href="https://parrotnavy.github.io/anti-adhd/terms.html">
+  <title>AntiADHD - Terms</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="text/javascript">
+    (() => {
+      if (typeof window.clarity !== "function") {
+        window.clarity = (...args) => {
+          window.clarity.q = window.clarity.q || [];
+          window.clarity.q.push(args);
+        };
+      }
+
+      const clarityScript = document.createElement("script");
+      clarityScript.async = true;
+      clarityScript.src = "https://www.clarity.ms/tag/__CLARITY_PROJECT_ID__";
+
+      const firstScript = document.getElementsByTagName("script")[0];
+      const parentNode = firstScript?.parentNode;
+      if (parentNode) {
+        parentNode.insertBefore(clarityScript, firstScript);
+      } else {
+        document.head.appendChild(clarityScript);
+      }
+    })();
+  </script>
+</head>
+<body data-clarity-page="terms" data-clarity-locale="en">
+  <header class="site-header site-header-legal">
+    <div class="shell header-row">
+      <a href="index.html" class="logo" data-clarity-event="nav_logo_click">AntiADHD</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="index.html#modes">Modes</a>
+        <a href="index.html#download">Download</a>
+      </nav>
+      <a href="ko/" class="locale-link" lang="ko" data-clarity-event="nav_locale_ko_click">한국어</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="section-space legal-hero">
+      <div class="shell legal-wrap reveal r1">
+        <p class="eyebrow">Legal</p>
+        <h1>Terms of Use</h1>
+        <p class="lead">Effective date: March 5, 2026</p>
+      </div>
+    </section>
+
+    <section class="section-space legal-body">
+      <div class="shell legal-wrap">
+        <h2>1. Acceptance</h2>
+        <p>By using this website or downloading AntiADHD releases, you agree to these terms.</p>
+
+        <h2>2. License</h2>
+        <p>AntiADHD is distributed through the repository release process. Refer to the repository license for reuse and distribution rights.</p>
+
+        <h2>3. Availability</h2>
+        <p>Downloads are provided on an "as is" basis without uptime guarantees. Release assets may be updated or removed as maintenance requires.</p>
+
+        <h2>4. Usage Responsibility</h2>
+        <p>You are responsible for granting required macOS permissions, including Accessibility access for window-focused modes.</p>
+
+        <h2>5. External Services</h2>
+        <p>This site links to GitHub and uses Microsoft Clarity. Those services are governed by their own terms and policies.</p>
+
+        <h2>6. Contact</h2>
+        <p>Questions can be reported via <a href="https://github.com/parrotnavy/anti-adhd/issues" target="_blank" rel="noopener">GitHub Issues</a>.</p>
+
+        <div class="legal-cta" id="download">
+          <a class="btn-download" href="https://github.com/parrotnavy/anti-adhd/releases" data-download-os="macos" data-clarity-event="download_macos_click">
+            <span class="btn-title">Download for macOS</span>
+            <span class="btn-sub">GitHub Releases fallback</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-row">
+      <p>&copy; 2026 AntiADHD</p>
+      <div class="footer-links">
+        <a href="privacy.html" data-clarity-event="footer_privacy_click">Privacy</a>
+        <a href="https://github.com/parrotnavy/anti-adhd" target="_blank" rel="noopener" data-clarity-event="footer_github_click">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/clarity-events.js"></script>
+  <script src="assets/js/download-latest-macos.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve CLARITY_PROJECT_ID
+        id: clarity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          var="${{ vars.CLARITY_PROJECT_ID }}"
+          secret="${{ secrets.CLARITY_PROJECT_ID }}"
+
+          if [[ -n "$var" ]]; then
+            id="$var"
+          elif [[ -n "$secret" ]]; then
+            id="$secret"
+          else
+            echo "Missing CLARITY_PROJECT_ID. Set Actions variable CLARITY_PROJECT_ID (preferred) or secret CLARITY_PROJECT_ID." >&2
+            exit 1
+          fi
+
+          echo "::add-mask::$id"
+          echo "id=$id" >>"$GITHUB_OUTPUT"
+
+      - name: Inject Clarity project id into HTML
+        shell: bash
+        env:
+          CLARITY_PROJECT_ID: ${{ steps.clarity.outputs.id }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! -d site ]]; then
+            echo "Expected site/ directory to exist." >&2
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import sys
+
+          root = pathlib.Path("site")
+          placeholder = "__CLARITY_PROJECT_ID__"
+          clarity = os.environ.get("CLARITY_PROJECT_ID", "")
+          if not clarity:
+            print("CLARITY_PROJECT_ID env missing", file=sys.stderr)
+            raise SystemExit(1)
+
+          html_files = sorted(root.rglob("*.html"))
+          if not html_files:
+            print("No HTML files found under site/", file=sys.stderr)
+            raise SystemExit(1)
+
+          modified = 0
+          for path in html_files:
+            data = path.read_text(encoding="utf-8")
+            if placeholder in data:
+              path.write_text(data.replace(placeholder, clarity), encoding="utf-8")
+              modified += 1
+
+          print(f"HTML files scanned: {len(html_files)}; files modified: {modified}")
+          PY
+
+      - name: Verify Clarity placeholder is fully replaced
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f site/.nojekyll ]]; then
+            echo "Missing site/.nojekyll. This file must be committed to disable Jekyll." >&2
+            exit 1
+          fi
+
+          if grep -R "__CLARITY_PROJECT_ID__" -n site; then
+            echo "Clarity placeholder still present after injection; failing." >&2
+            exit 1
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

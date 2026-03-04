@@ -2,10 +2,11 @@ import AppKit
 import ApplicationServices
 
 final class AccessibilityService {
+    private let trustedCheckOptionPromptKey = "AXTrustedCheckOptionPrompt"
     private let systemWide = AXUIElementCreateSystemWide()
 
     func hasPermission(prompt: Bool = false) -> Bool {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: prompt] as CFDictionary
+        let options = [trustedCheckOptionPromptKey: prompt] as CFDictionary
         return AXIsProcessTrustedWithOptions(options)
     }
 
