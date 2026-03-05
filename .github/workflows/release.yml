@@ -214,7 +214,7 @@ jobs:
           run_id=""
           run_url=""
           for attempt in $(seq 1 "$max_discovery_attempts"); do
-            matched_run="$(DISPATCH_STARTED_AT="$dispatch_started_at" EXPECTED_HEAD_SHA="$expected_head_sha" gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_file}/runs" --field branch="$branch" --field event="workflow_dispatch" --field per_page=50 --jq '.workflow_runs | map(select(.created_at >= env.DISPATCH_STARTED_AT and .head_sha == env.EXPECTED_HEAD_SHA and ((.actor.login // "") == "github-actions[bot]"))) | sort_by(.created_at) | .[0] | "\(.id)|\(.html_url)"' 2>/dev/null || true)"
+            matched_run="$(DISPATCH_STARTED_AT="$dispatch_started_at" EXPECTED_HEAD_SHA="$expected_head_sha" gh api -X GET "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_file}/runs?branch=${branch}&event=workflow_dispatch&per_page=50" --jq '.workflow_runs | map(select(.created_at >= env.DISPATCH_STARTED_AT and .head_sha == env.EXPECTED_HEAD_SHA and ((.actor.login // "") == "github-actions[bot]"))) | sort_by(.created_at) | .[0] | "\(.id)|\(.html_url)"' 2>/dev/null || true)"
 
             if [[ -n "$matched_run" ]]; then
               run_id="${matched_run%%|*}"
