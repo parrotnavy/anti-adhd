@@ -6,6 +6,7 @@
         <description>Focus mask menu bar app for macOS</description>
         <language>en</language>
 
+        
         <item>
             <title>Version 0.0.2</title>
             <link>https://github.com/parrotnavy/anti-adhd/releases/tag/v0.0.2</link>
@@ -14,9 +15,9 @@
                 url="https://github.com/parrotnavy/anti-adhd/releases/download/v0.0.2/AntiADHD-0.0.2.dmg"
                 sparkle:version="0.0.2"
                 sparkle:shortVersionString="0.0.2"
-                length="1211969"
+                length="1212307"
                 type="application/octet-stream"
-                sparkle:edSignature="iiL8gk716ojZr58CJZSa3k/3ayclBy+2TGC7Y02uRjEudGHtGlr8GC9+vr6JNDse5cudlFQhK3es5iWvVh+RBA==" />
+                sparkle:edSignature="2QwKJcL262fpxNzcRL+5Xza3rcetaXMoVovnkJxds3zDKi8GfY7EZgnBCFGKDl7cwFBmrqKvAQ9+rPaijNp4Bw==" />
         </item>
         <!-- Add new releases above this comment -->
     </channel>
