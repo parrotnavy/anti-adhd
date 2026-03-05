@@ -284,15 +284,7 @@ jobs:
               exit 1
             fi
           else
-            python3 - <<'PY'
-            import xml.etree.ElementTree as ET
-
-            path = "site/api/macos-appcast.xml"
-            root = ET.parse(path).getroot()
-            tag = root.tag.split('}', 1)[-1]
-            if tag != "rss":
-              raise SystemExit(f"Expected appcast root element <rss>, got <{root.tag}>")
-            PY
+            python3 -c 'import xml.etree.ElementTree as ET; root = ET.parse("site/api/macos-appcast.xml").getroot(); tag = root.tag.split("}", 1)[-1]; assert tag == "rss", f"Expected appcast root element <rss>, got <{root.tag}>"'
           fi
 
       - name: Configure Pages
@@ -348,16 +340,7 @@ jobs:
               exit 1
             fi
           else
-            python3 - <<'PY'
-            import os
-            import xml.etree.ElementTree as ET
-
-            path = os.environ["APPCAST_TMP"]
-            root = ET.parse(path).getroot()
-            tag = root.tag.split('}', 1)[-1]
-            if tag != "rss":
-              raise SystemExit(f"Expected deployed appcast root element <rss>, got <{root.tag}>")
-            PY
+            python3 -c 'import os, xml.etree.ElementTree as ET; root = ET.parse(os.environ["APPCAST_TMP"]).getroot(); tag = root.tag.split("}", 1)[-1]; assert tag == "rss", f"Expected deployed appcast root element <rss>, got <{root.tag}>"'
           fi
 
           if ! grep -Fq "$DOWNLOAD_URL" "$tmp"; then
