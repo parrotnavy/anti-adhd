@@ -19,6 +19,18 @@
                 type="application/octet-stream"
                 sparkle:edSignature="2QwKJcL262fpxNzcRL+5Xza3rcetaXMoVovnkJxds3zDKi8GfY7EZgnBCFGKDl7cwFBmrqKvAQ9+rPaijNp4Bw==" />
         </item>
+        <item>
+            <title>Version 0.0.3</title>
+            <link>https://github.com/parrotnavy/anti-adhd/releases/tag/v0.0.3</link>
+            <description>Release 0.0.3</description>
+            <enclosure
+                url="https://github.com/parrotnavy/anti-adhd/releases/download/v0.0.3/AntiADHD-0.0.3.dmg"
+                sparkle:version="0.0.3"
+                sparkle:shortVersionString="0.0.3"
+                length="1212260"
+                type="application/octet-stream"
+                sparkle:edSignature="7SlNS0kNuyQ25tyiCEKuOeBGUcePpmsVPrHRt+FadIGuxYs/1mA6m+0L2VEwEoXnfcprFn7O2hPwluq41muBCA==" />
+        </item>
         <!-- Add new releases above this comment -->
     </channel>
 </rss>
