@@ -58,32 +58,7 @@ jobs:
             exit 1
           fi
 
-          python3 - <<'PY'
-          import os
-          import pathlib
-          import sys
-
-          root = pathlib.Path("site")
-          placeholder = "__CLARITY_PROJECT_ID__"
-          clarity = os.environ.get("CLARITY_PROJECT_ID", "")
-          if not clarity:
-            print("CLARITY_PROJECT_ID env missing", file=sys.stderr)
-            raise SystemExit(1)
-
-          html_files = sorted(root.rglob("*.html"))
-          if not html_files:
-            print("No HTML files found under site/", file=sys.stderr)
-            raise SystemExit(1)
-
-          modified = 0
-          for path in html_files:
-            data = path.read_text(encoding="utf-8")
-            if placeholder in data:
-              path.write_text(data.replace(placeholder, clarity), encoding="utf-8")
-              modified += 1
-
-          print(f"HTML files scanned: {len(html_files)}; files modified: {modified}")
-          PY
+          python3 -c $'import os\nimport pathlib\nimport sys\n\nroot = pathlib.Path("site")\nplaceholder = "__CLARITY_PROJECT_ID__"\nclarity = os.environ.get("CLARITY_PROJECT_ID", "")\nif not clarity:\n  print("CLARITY_PROJECT_ID env missing", file=sys.stderr)\n  raise SystemExit(1)\n\nhtml_files = sorted(root.rglob("*.html"))\nif not html_files:\n  print("No HTML files found under site/", file=sys.stderr)\n  raise SystemExit(1)\n\nmodified = 0\nfor path in html_files:\n  data = path.read_text(encoding="utf-8")\n  if placeholder in data:\n    path.write_text(data.replace(placeholder, clarity), encoding="utf-8")\n    modified += 1\n\nprint(f"HTML files scanned: {len(html_files)}; files modified: {modified}")'
 
       - name: Verify Clarity placeholder is fully replaced
         shell: bash
@@ -120,15 +95,7 @@ jobs:
               exit 1
             fi
           else
-            python3 - <<'PY'
-            import xml.etree.ElementTree as ET
-
-            path = "site/api/macos-appcast.xml"
-            root = ET.parse(path).getroot()
-            tag = root.tag.split('}', 1)[-1]
-            if tag != "rss":
-              raise SystemExit(f"Expected appcast root element <rss>, got <{root.tag}>")
-            PY
+            python3 -c 'import xml.etree.ElementTree as ET; root = ET.parse("site/api/macos-appcast.xml").getroot(); tag = root.tag.split("}", 1)[-1]; assert tag == "rss", f"Expected appcast root element <rss>, got <{root.tag}>"'
           fi
 
       - name: Configure Pages
@@ -180,14 +147,5 @@ jobs:
               exit 1
             fi
           else
-            python3 - <<'PY'
-            import os
-            import xml.etree.ElementTree as ET
-
-            path = os.environ["APPCAST_TMP"]
-            root = ET.parse(path).getroot()
-            tag = root.tag.split('}', 1)[-1]
-            if tag != "rss":
-              raise SystemExit(f"Expected deployed appcast root element <rss>, got <{root.tag}>")
-            PY
+            python3 -c 'import os, xml.etree.ElementTree as ET; root = ET.parse(os.environ["APPCAST_TMP"]).getroot(); tag = root.tag.split("}", 1)[-1]; assert tag == "rss", f"Expected deployed appcast root element <rss>, got <{root.tag}>"'
           fi
