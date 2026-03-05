@@ -11,6 +11,8 @@ readonly APP_NAME="AntiADHD"
 readonly EXECUTABLE_NAME="AntiADHD"
 readonly MINIMUM_MACOS="13.0"
 readonly DEFAULT_BUNDLE_ID="com.parrotnavy.antiadhd"
+readonly DEFAULT_SPARKLE_FEED_URL="https://parrotnavy.github.io/anti-adhd/api/macos-appcast.xml"
+readonly DEFAULT_SPARKLE_PUBLIC_ED_KEY="pXA8Cv2XBe/5ug0CT2KItb84Hyh2Z2gdA3vh4bewycY="
 
 usage() {
   printf 'Usage: %s <VERSION>\n' "$0" >&2
@@ -194,9 +196,29 @@ create_info_plist() {
   <string>$MINIMUM_MACOS</string>
   <key>LSUIElement</key>
   <true/>
+  <key>SUFeedURL</key>
+  <string>$SPARKLE_FEED_URL</string>
+  <key>SUPublicEDKey</key>
+  <string>$SPARKLE_PUBLIC_ED_KEY</string>
 </dict>
 </plist>
 EOF
+}
+
+embed_sparkle_framework() {
+  local sparkle_framework_src
+  sparkle_framework_src="$PROJECT_ROOT/.build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework"
+
+  if [[ ! -d "$sparkle_framework_src" ]]; then
+    fail "Sparkle.framework not found at $sparkle_framework_src. Run 'swift package resolve' before packaging."
+  fi
+
+  rm -rf "$FRAMEWORKS_DIR/Sparkle.framework"
+  /usr/bin/ditto "$sparkle_framework_src" "$FRAMEWORKS_DIR/Sparkle.framework"
+
+  [[ -d "$FRAMEWORKS_DIR/Sparkle.framework" ]] || fail "Sparkle.framework embed failed: $FRAMEWORKS_DIR/Sparkle.framework is missing"
+
+  [[ -d "$FRAMEWORKS_DIR/Sparkle.framework/Updater.app" ]] || fail "Sparkle embed incomplete: missing $FRAMEWORKS_DIR/Sparkle.framework/Updater.app"
 }
 
 embed_swift_runtime() {
@@ -221,6 +243,22 @@ embed_swift_runtime() {
   fi
 
   xcrun swift-stdlib-tool "$@"
+}
+
+ensure_frameworks_rpath() {
+  local binary rpath
+  binary="$1"
+  rpath="@executable_path/../Frameworks"
+
+  command -v otool >/dev/null 2>&1 || fail "otool not found; cannot verify rpath for $binary"
+  command -v install_name_tool >/dev/null 2>&1 || fail "install_name_tool not found; cannot set rpath for $binary"
+
+  if otool -l "$binary" 2>/dev/null | /usr/bin/grep -q "path $rpath ("; then
+    return 0
+  fi
+
+  install_name_tool -add_rpath "$rpath" "$binary" || fail "Failed to add rpath '$rpath' to $binary"
+  otool -l "$binary" 2>/dev/null | /usr/bin/grep -q "path $rpath (" || fail "rpath '$rpath' missing after install_name_tool for $binary"
 }
 
 sign_app_bundle() {
@@ -313,6 +351,9 @@ fi
 
 export MACOSX_DEPLOYMENT_TARGET="$MINIMUM_MACOS"
 
+readonly SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-$DEFAULT_SPARKLE_FEED_URL}"
+readonly SPARKLE_PUBLIC_ED_KEY="${SPARKLE_PUBLIC_ED_KEY:-$DEFAULT_SPARKLE_PUBLIC_ED_KEY}"
+
 readonly BUNDLE_ID="${BUNDLE_ID:-$DEFAULT_BUNDLE_ID}"
 readonly TARGET_ARCHS="${TARGET_ARCHS:-arm64 x86_64}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -350,6 +391,12 @@ create_info_plist
 
 log "Embedding Swift runtime"
 embed_swift_runtime "$CODE_SIGN_IDENTITY"
+
+log "Embedding Sparkle.framework"
+embed_sparkle_framework
+
+log "Ensuring executable rpath for Frameworks"
+ensure_frameworks_rpath "$APP_EXECUTABLE_PATH"
 
 log "Signing app bundle"
 sign_app_bundle "$CODE_SIGN_IDENTITY"

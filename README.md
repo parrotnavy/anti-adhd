@@ -67,6 +67,19 @@ git tag vX.Y.Z && git push origin vX.Y.Z
 - 업로드 아티팩트: `dist/AntiADHD-X.Y.Z.dmg`, `dist/SHA256SUMS.txt`
 - 릴리즈 노트는 `scripts/generate_release_notes.sh` 로 생성됩니다.
 
+## 자동 업데이트 (Sparkle)
+Sparkle 앱캐스트(feed)는 GitHub Pages에서 호스팅됩니다.
+
+- `SUFeedURL`: `https://parrotnavy.github.io/anti-adhd/api/macos-appcast.xml`
+- 소스 파일: `site/api/macos-appcast.xml`
+- 릴리즈 워크플로우에서 DMG에 대한 Sparkle 서명을 만들려면 아래 secret이 필요합니다.
+  - `SPARKLE_ED25519_PRIVATE_KEY_BASE64`: Ed25519 private key (base64). 절대 커밋하지 마세요.
+- `scripts/package_dmg.sh` 는 notarization을 선택적으로 지원합니다. 아래 값이 모두 설정되면 `notarytool submit` 후 `stapler staple`까지 수행합니다.
+  - `APPLE_NOTARY_KEY_P8_PATH`: App Store Connect API Key(.p8) 파일 경로
+  - `APPLE_NOTARY_KEY_ID`: Key ID
+  - `APPLE_NOTARY_ISSUER_ID`: Issuer ID
+- 재현 가능한 의존성 고정을 위해 `Package.resolved` 는 저장소에 커밋합니다.
+
 ## GitHub Pages (사이트 배포)
 Pages 배포 워크플로우: `.github/workflows/deploy-pages.yml`
 

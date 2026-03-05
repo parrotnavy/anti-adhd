@@ -4,9 +4,14 @@ import Foundation
 
 @MainActor
 final class AppCoordinator: NSObject {
+    private static let automaticUpdateChecksPreferenceKey = "SUEnableAutomaticChecks"
+
     private let overlayManager = OverlayManager()
     private let accessibilityService = AccessibilityService()
     private let hotKeyManager = HotKeyManager()
+    private let updateService = UpdateService(
+        automaticallyChecksForUpdates: AppCoordinator.automaticUpdateChecksPreferenceOrDefault()
+    )
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let menu = NSMenu()
@@ -39,6 +44,9 @@ final class AppCoordinator: NSObject {
     private let permissionStatusMenuItem = NSMenuItem(title: "Accessibility: Unknown", action: nil, keyEquivalent: "")
     private let requestPermissionMenuItem = NSMenuItem(title: "Request Accessibility Permission", action: #selector(requestAccessibilityPermission), keyEquivalent: "")
     private let hotKeyStatusMenuItem = NSMenuItem(title: "Hotkeys: Ready", action: nil, keyEquivalent: "")
+
+    private let checkForUpdatesMenuItem = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+    private let automaticUpdateChecksMenuItem = NSMenuItem(title: "Automatically Check for Updates", action: #selector(toggleAutomaticUpdateChecks), keyEquivalent: "")
     private let quitMenuItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
 
     private lazy var blackOpacityMenuItems: [NSMenuItem] = [
@@ -48,6 +56,17 @@ final class AppCoordinator: NSObject {
         blackOpacity85MenuItem,
         blackOpacity100MenuItem
     ]
+
+    private static func automaticUpdateChecksPreferenceOrDefault() -> Bool {
+        let defaults = UserDefaults.standard
+        let key = automaticUpdateChecksPreferenceKey
+
+        guard defaults.object(forKey: key) != nil else {
+            return true
+        }
+
+        return defaults.bool(forKey: key)
+    }
 
     func start() {
         configureStatusItem()
@@ -99,6 +118,9 @@ final class AppCoordinator: NSObject {
 
         hotKeyStatusMenuItem.isEnabled = false
 
+        checkForUpdatesMenuItem.target = self
+        automaticUpdateChecksMenuItem.target = self
+
         quitMenuItem.target = self
 
         let modeRootMenuItem = NSMenuItem(title: "Mode", action: nil, keyEquivalent: "")
@@ -132,6 +154,9 @@ final class AppCoordinator: NSObject {
         menu.addItem(permissionStatusMenuItem)
         menu.addItem(requestPermissionMenuItem)
         menu.addItem(hotKeyStatusMenuItem)
+        menu.addItem(.separator())
+        menu.addItem(checkForUpdatesMenuItem)
+        menu.addItem(automaticUpdateChecksMenuItem)
         menu.addItem(.separator())
         menu.addItem(quitMenuItem)
     }
@@ -359,7 +384,21 @@ final class AppCoordinator: NSObject {
         let hasPermission = accessibilityService.hasPermission()
         permissionStatusMenuItem.title = hasPermission ? "Accessibility: Granted" : "Accessibility: Needed for window modes"
 
+        automaticUpdateChecksMenuItem.state = AppCoordinator.automaticUpdateChecksPreferenceOrDefault() ? .on : .off
+
         statusItem.button?.title = isOverlayEnabled ? "● Focus" : "○ Focus"
+    }
+
+    @objc
+    private func checkForUpdates() {
+        updateService.checkForUpdates()
+    }
+
+    @objc
+    private func toggleAutomaticUpdateChecks() {
+        let enabled = !AppCoordinator.automaticUpdateChecksPreferenceOrDefault()
+        updateService.setAutomaticallyChecksForUpdates(enabled)
+        updateUIState()
     }
 
     @objc

@@ -100,6 +100,37 @@ jobs:
             exit 1
           fi
 
+      - name: Validate macOS appcast (pre-deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          appcast_path="site/api/macos-appcast.xml"
+          if [[ ! -f "$appcast_path" ]]; then
+            echo "Missing $appcast_path. This file must be present in the Pages artifact." >&2
+            exit 1
+          fi
+
+          if command -v xmllint >/dev/null 2>&1; then
+            xmllint --noout "$appcast_path"
+
+            root="$(xmllint --xpath 'local-name(/*)' "$appcast_path" 2>/dev/null || true)"
+            if [[ "$root" != "rss" ]]; then
+              echo "Expected appcast root element <rss>, got '$root'" >&2
+              exit 1
+            fi
+          else
+            python3 - <<'PY'
+            import xml.etree.ElementTree as ET
+
+            path = "site/api/macos-appcast.xml"
+            root = ET.parse(path).getroot()
+            tag = root.tag.split('}', 1)[-1]
+            if tag != "rss":
+              raise SystemExit(f"Expected appcast root element <rss>, got <{root.tag}>")
+            PY
+          fi
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -111,3 +142,52 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Validate deployed appcast (post-deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          appcast_url="${{ steps.deployment.outputs.page_url }}api/macos-appcast.xml"
+          echo "Checking deployed appcast: $appcast_url"
+
+          tmp="$(mktemp)"
+          cleanup() { rm -f "$tmp"; }
+          trap cleanup EXIT
+          export APPCAST_TMP="$tmp"
+
+          attempts=10
+          sleep_seconds=3
+          for i in $(seq 1 "$attempts"); do
+            if curl -fsSL "$appcast_url" -o "$tmp"; then
+              break
+            fi
+
+            if [[ "$i" -eq "$attempts" ]]; then
+              echo "Failed to fetch deployed appcast after $attempts attempts: $appcast_url" >&2
+              exit 1
+            fi
+
+            echo "Fetch failed (attempt $i/$attempts); retrying in ${sleep_seconds}s..." >&2
+            sleep "$sleep_seconds"
+          done
+
+          if command -v xmllint >/dev/null 2>&1; then
+            xmllint --noout "$tmp"
+            root="$(xmllint --xpath 'local-name(/*)' "$tmp" 2>/dev/null || true)"
+            if [[ "$root" != "rss" ]]; then
+              echo "Expected deployed appcast root element <rss>, got '$root'" >&2
+              exit 1
+            fi
+          else
+            python3 - <<'PY'
+            import os
+            import xml.etree.ElementTree as ET
+
+            path = os.environ["APPCAST_TMP"]
+            root = ET.parse(path).getroot()
+            tag = root.tag.split('}', 1)[-1]
+            if tag != "rss":
+              raise SystemExit(f"Expected deployed appcast root element <rss>, got <{root.tag}>")
+            PY
+          fi

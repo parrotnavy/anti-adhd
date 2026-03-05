@@ -18,6 +18,12 @@ jobs:
   release:
     name: Build and publish macOS release
     runs-on: macos-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      signature: ${{ steps.sparkle.outputs.signature }}
+      length: ${{ steps.sparkle.outputs.length }}
+      download_url: ${{ steps.release_meta.outputs.download_url }}
+      release_page_url: ${{ steps.release_meta.outputs.release_page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,6 +56,75 @@ jobs:
       - name: Package DMG
         run: ./scripts/package_dmg.sh "${VERSION}"
 
+      - name: Resolve release URLs
+        id: release_meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          download_url="https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/AntiADHD-${VERSION}.dmg"
+          release_page_url="https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${VERSION}"
+          echo "download_url=${download_url}" >> "${GITHUB_OUTPUT}"
+          echo "release_page_url=${release_page_url}" >> "${GITHUB_OUTPUT}"
+
+      - name: Compute Sparkle signature and length
+        id: sparkle
+        shell: bash
+        env:
+          SPARKLE_ED25519_PRIVATE_KEY_BASE64: ${{ secrets.SPARKLE_ED25519_PRIVATE_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${SPARKLE_ED25519_PRIVATE_KEY_BASE64:-}" ]]; then
+            echo "Missing SPARKLE_ED25519_PRIVATE_KEY_BASE64 secret." >&2
+            exit 1
+          fi
+
+          dmg_path="dist/AntiADHD-${VERSION}.dmg"
+          sign_tool=".build/artifacts/sparkle/Sparkle/bin/sign_update"
+
+          if [[ ! -f "$dmg_path" ]]; then
+            echo "Missing DMG artifact: $dmg_path" >&2
+            exit 1
+          fi
+
+          if [[ ! -x "$sign_tool" ]]; then
+            echo "Missing Sparkle sign tool: $sign_tool" >&2
+            exit 1
+          fi
+
+          key_file="$(mktemp)"
+          cleanup() {
+            rm -f "$key_file"
+          }
+          trap cleanup EXIT
+
+          export SPARKLE_KEY_FILE="$key_file"
+          python3 - <<'PY'
+          import base64
+          import os
+          import pathlib
+
+          encoded = os.environ["SPARKLE_ED25519_PRIVATE_KEY_BASE64"].strip()
+          key_path = pathlib.Path(os.environ["SPARKLE_KEY_FILE"])
+          key_path.write_bytes(base64.b64decode(encoded))
+          key_path.chmod(0o600)
+          PY
+
+          signature="$($sign_tool --ed-key-file "$key_file" -p "$dmg_path" | tr -d '\r\n')"
+          if [[ -z "$signature" ]]; then
+            echo "Sparkle signature generation failed." >&2
+            exit 1
+          fi
+
+          length="$(stat -f%z "$dmg_path")"
+          if [[ ! "$length" =~ ^[0-9]+$ ]]; then
+            echo "Invalid DMG length: $length" >&2
+            exit 1
+          fi
+
+          echo "signature=$signature" >> "$GITHUB_OUTPUT"
+          echo "length=$length" >> "$GITHUB_OUTPUT"
+
       - name: Generate release notes
         run: ./scripts/generate_release_notes.sh --version "${VERSION}" > release-notes.md
 
@@ -62,3 +137,235 @@ jobs:
           files: |
             dist/AntiADHD-${{ steps.version.outputs.version }}.dmg
             dist/SHA256SUMS.txt
+
+  pages:
+    name: Update appcast and deploy Pages
+    runs-on: ubuntu-latest
+    needs: release
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Update Sparkle appcast
+        shell: bash
+        env:
+          APPCAST_XML: site/api/macos-appcast.xml
+          VERSION: ${{ needs.release.outputs.version }}
+          DOWNLOAD_URL: ${{ needs.release.outputs.download_url }}
+          SIGNATURE: ${{ needs.release.outputs.signature }}
+          LENGTH: ${{ needs.release.outputs.length }}
+          RELEASE_PAGE_URL: ${{ needs.release.outputs.release_page_url }}
+        run: |
+          set -euo pipefail
+          ./scripts/update_sparkle_appcast.sh
+
+      - name: Commit appcast update
+        id: appcast_commit
+        shell: bash
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- site/api/macos-appcast.xml; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/api/macos-appcast.xml
+          git commit -m "chore: update macOS appcast for v${VERSION}" -- site/api/macos-appcast.xml
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve CLARITY_PROJECT_ID
+        id: clarity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          var="${{ vars.CLARITY_PROJECT_ID }}"
+          secret="${{ secrets.CLARITY_PROJECT_ID }}"
+
+          if [[ -n "$var" ]]; then
+            id="$var"
+          elif [[ -n "$secret" ]]; then
+            id="$secret"
+          else
+            echo "Missing CLARITY_PROJECT_ID. Set Actions variable CLARITY_PROJECT_ID (preferred) or secret CLARITY_PROJECT_ID." >&2
+            exit 1
+          fi
+
+          echo "::add-mask::$id"
+          echo "id=$id" >>"$GITHUB_OUTPUT"
+
+      - name: Inject Clarity project id into HTML
+        shell: bash
+        env:
+          CLARITY_PROJECT_ID: ${{ steps.clarity.outputs.id }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! -d site ]]; then
+            echo "Expected site/ directory to exist." >&2
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import sys
+
+          root = pathlib.Path("site")
+          placeholder = "__CLARITY_PROJECT_ID__"
+          clarity = os.environ.get("CLARITY_PROJECT_ID", "")
+          if not clarity:
+            print("CLARITY_PROJECT_ID env missing", file=sys.stderr)
+            raise SystemExit(1)
+
+          html_files = sorted(root.rglob("*.html"))
+          if not html_files:
+            print("No HTML files found under site/", file=sys.stderr)
+            raise SystemExit(1)
+
+          modified = 0
+          for path in html_files:
+            data = path.read_text(encoding="utf-8")
+            if placeholder in data:
+              path.write_text(data.replace(placeholder, clarity), encoding="utf-8")
+              modified += 1
+
+          print(f"HTML files scanned: {len(html_files)}; files modified: {modified}")
+          PY
+
+      - name: Verify Clarity placeholder is fully replaced
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f site/.nojekyll ]]; then
+            echo "Missing site/.nojekyll. This file must be committed to disable Jekyll." >&2
+            exit 1
+          fi
+
+          if grep -R "__CLARITY_PROJECT_ID__" -n site; then
+            echo "Clarity placeholder still present after injection; failing." >&2
+            exit 1
+          fi
+
+      - name: Validate macOS appcast (pre-deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          appcast_path="site/api/macos-appcast.xml"
+          if [[ ! -f "$appcast_path" ]]; then
+            echo "Missing $appcast_path. This file must be present in the Pages artifact." >&2
+            exit 1
+          fi
+
+          if command -v xmllint >/dev/null 2>&1; then
+            xmllint --noout "$appcast_path"
+
+            root="$(xmllint --xpath 'local-name(/*)' "$appcast_path" 2>/dev/null || true)"
+            if [[ "$root" != "rss" ]]; then
+              echo "Expected appcast root element <rss>, got '$root'" >&2
+              exit 1
+            fi
+          else
+            python3 - <<'PY'
+            import xml.etree.ElementTree as ET
+
+            path = "site/api/macos-appcast.xml"
+            root = ET.parse(path).getroot()
+            tag = root.tag.split('}', 1)[-1]
+            if tag != "rss":
+              raise SystemExit(f"Expected appcast root element <rss>, got <{root.tag}>")
+            PY
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Validate deployed appcast (post-deploy)
+        shell: bash
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          DOWNLOAD_URL: ${{ needs.release.outputs.download_url }}
+        run: |
+          set -euo pipefail
+
+          appcast_url="${{ steps.deployment.outputs.page_url }}api/macos-appcast.xml"
+          expected_dmg="AntiADHD-${VERSION}.dmg"
+          echo "Checking deployed appcast: $appcast_url"
+
+          tmp="$(mktemp)"
+          cleanup() { rm -f "$tmp"; }
+          trap cleanup EXIT
+          export APPCAST_TMP="$tmp"
+
+          attempts=10
+          sleep_seconds=3
+          for i in $(seq 1 "$attempts"); do
+            if curl -fsSL "$appcast_url" -o "$tmp"; then
+              break
+            fi
+
+            if [[ "$i" -eq "$attempts" ]]; then
+              echo "Failed to fetch deployed appcast after $attempts attempts: $appcast_url" >&2
+              exit 1
+            fi
+
+            echo "Fetch failed (attempt $i/$attempts); retrying in ${sleep_seconds}s..." >&2
+            sleep "$sleep_seconds"
+          done
+
+          if command -v xmllint >/dev/null 2>&1; then
+            xmllint --noout "$tmp"
+            root="$(xmllint --xpath 'local-name(/*)' "$tmp" 2>/dev/null || true)"
+            if [[ "$root" != "rss" ]]; then
+              echo "Expected deployed appcast root element <rss>, got '$root'" >&2
+              exit 1
+            fi
+          else
+            python3 - <<'PY'
+            import os
+            import xml.etree.ElementTree as ET
+
+            path = os.environ["APPCAST_TMP"]
+            root = ET.parse(path).getroot()
+            tag = root.tag.split('}', 1)[-1]
+            if tag != "rss":
+              raise SystemExit(f"Expected deployed appcast root element <rss>, got <{root.tag}>")
+            PY
+          fi
+
+          if ! grep -Fq "$DOWNLOAD_URL" "$tmp"; then
+            echo "Deployed appcast does not include expected download URL: $DOWNLOAD_URL" >&2
+            exit 1
+          fi
+
+          if ! grep -Fq "$expected_dmg" "$tmp"; then
+            echo "Deployed appcast does not include expected DMG filename: $expected_dmg" >&2
+            exit 1
+          fi
