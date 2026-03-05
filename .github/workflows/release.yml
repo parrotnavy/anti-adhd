@@ -316,39 +316,60 @@ jobs:
           trap cleanup EXIT
           export APPCAST_TMP="$tmp"
 
-          attempts=10
-          sleep_seconds=3
-          for i in $(seq 1 "$attempts"); do
-            if curl -fsSL "$appcast_url" -o "$tmp"; then
-              break
+          max_attempts=24
+          sleep_seconds=5
+
+          for i in $(seq 1 "$max_attempts"); do
+            echo "Appcast validation attempt $i/$max_attempts"
+
+            reason=""
+            if ! curl -fsSL "$appcast_url" -o "$tmp"; then
+              reason="Fetch failed"
+            else
+              xml_ok=true
+              if command -v xmllint >/dev/null 2>&1; then
+                if ! xmllint --noout "$tmp"; then
+                  xml_ok=false
+                  reason="Invalid XML"
+                else
+                  root="$(xmllint --xpath 'local-name(/*)' "$tmp" 2>/dev/null || true)"
+                  if [[ "$root" != "rss" ]]; then
+                    xml_ok=false
+                    reason="Expected root element <rss>, got '$root'"
+                  fi
+                fi
+              else
+                if ! python3 -c 'import os, xml.etree.ElementTree as ET; root = ET.parse(os.environ["APPCAST_TMP"]).getroot(); tag = root.tag.split("}", 1)[-1]; assert tag == "rss", f"Expected root element <rss>, got <{root.tag}>"'; then
+                  xml_ok=false
+                  reason="Invalid XML or unexpected root element"
+                fi
+              fi
+
+              if [[ "$xml_ok" == "true" ]]; then
+                missing=()
+                if ! grep -Fq "$DOWNLOAD_URL" "$tmp"; then
+                  missing+=("DOWNLOAD_URL")
+                fi
+                if ! grep -Fq "$expected_dmg" "$tmp"; then
+                  missing+=("DMG filename")
+                fi
+
+                if [[ "${#missing[@]}" -eq 0 ]]; then
+                  echo "Deployed appcast contains expected download URL and DMG: $expected_dmg"
+                  exit 0
+                fi
+
+                reason="Deployed appcast missing expected token(s): ${missing[*]} (likely Pages propagation delay)"
+              fi
             fi
 
-            if [[ "$i" -eq "$attempts" ]]; then
-              echo "Failed to fetch deployed appcast after $attempts attempts: $appcast_url" >&2
+            if [[ "$i" -eq "$max_attempts" ]]; then
+              echo "Deployed appcast did not converge after $max_attempts attempts: $appcast_url" >&2
+              echo "Last failure: $reason" >&2
+              python3 -c 'import os, pathlib; p = pathlib.Path(os.environ.get("APPCAST_TMP", "")); data = p.read_text(encoding="utf-8", errors="replace") if p.exists() else ""; lines = data.splitlines(); print("---- deployed appcast (first 60 lines) ----"); print("\n".join(lines[:60])); print("---- end snippet ----")'
               exit 1
             fi
 
-            echo "Fetch failed (attempt $i/$attempts); retrying in ${sleep_seconds}s..." >&2
+            echo "$reason; retrying in ${sleep_seconds}s..." >&2
             sleep "$sleep_seconds"
           done
-
-          if command -v xmllint >/dev/null 2>&1; then
-            xmllint --noout "$tmp"
-            root="$(xmllint --xpath 'local-name(/*)' "$tmp" 2>/dev/null || true)"
-            if [[ "$root" != "rss" ]]; then
-              echo "Expected deployed appcast root element <rss>, got '$root'" >&2
-              exit 1
-            fi
-          else
-            python3 -c 'import os, xml.etree.ElementTree as ET; root = ET.parse(os.environ["APPCAST_TMP"]).getroot(); tag = root.tag.split("}", 1)[-1]; assert tag == "rss", f"Expected deployed appcast root element <rss>, got <{root.tag}>"'
-          fi
-
-          if ! grep -Fq "$DOWNLOAD_URL" "$tmp"; then
-            echo "Deployed appcast does not include expected download URL: $DOWNLOAD_URL" >&2
-            exit 1
-          fi
-
-          if ! grep -Fq "$expected_dmg" "$tmp"; then
-            echo "Deployed appcast does not include expected DMG filename: $expected_dmg" >&2
-            exit 1
-          fi
