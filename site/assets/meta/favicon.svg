@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>AntiADHD favicon</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f5fd8" />
+      <stop offset="68%" stop-color="#1847a3" />
+      <stop offset="100%" stop-color="#de5e38" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bg)" />
+  <rect x="11" y="14" width="42" height="28" rx="8" fill="#f7fbff" opacity="0.95" />
+  <rect x="17" y="19" width="30" height="18" rx="5" fill="#dce7ff" />
+  <rect x="21" y="24" width="14" height="7" rx="2.5" fill="#1f5fd8" opacity="0.22" />
+  <rect x="21" y="33" width="20" height="2.5" rx="1.25" fill="#10131f" opacity="0.22" />
+  <rect x="27" y="43" width="10" height="4" rx="2" fill="#f7fbff" opacity="0.72" />
+  <rect x="20" y="49" width="24" height="4" rx="2" fill="#f7fbff" opacity="0.6" />
+</svg>

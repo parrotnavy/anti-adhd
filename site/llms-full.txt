@@ -1,0 +1,50 @@
+# AntiADHD
+
+AntiADHD is a coming-soon macOS menu bar focus mask. Its purpose is to reduce visual distraction by masking parts of the desktop that are outside the display or window the user wants to focus on.
+
+## Product summary
+- Product type: macOS menu bar utility
+- Current availability: Coming soon
+- Supported OS: macOS 13 or later
+- Primary use case: Reduce desktop noise during focused work
+- Distribution plan: Public downloads will be published through GitHub Releases when distribution opens
+
+## Focus modes
+- Current Display: Keeps the display under the cursor clear while other displays stay masked
+- Focused Window: Keeps the active window clear while surrounding content can freeze, darken, or blur
+- Locked Window: Keeps a selected window visible even when the cursor moves to other windows
+
+## Permissions
+- Focused Window and Locked Window require macOS Accessibility permission
+- If that permission is not granted, AntiADHD falls back to Current Display mode
+
+## Hotkeys shown on the site
+- Option + Command + B: Toggle focus mask on and off
+- Option + Command + L: Lock the currently focused window
+- Option + Command + Escape: Instantly clear overlays
+
+## Language variants
+- English landing page: https://parrotnavy.github.io/anti-adhd/
+- Korean landing page: https://parrotnavy.github.io/anti-adhd/ko/
+- Legal pages are currently published in English only
+
+## Public pages
+- Home (EN): https://parrotnavy.github.io/anti-adhd/
+- Home (KO): https://parrotnavy.github.io/anti-adhd/ko/
+- Privacy Policy: https://parrotnavy.github.io/anti-adhd/privacy.html
+- Terms of Use: https://parrotnavy.github.io/anti-adhd/terms.html
+
+## Support and source
+- GitHub repository: https://github.com/parrotnavy/anti-adhd
+- GitHub Issues: https://github.com/parrotnavy/anti-adhd/issues
+
+## Technical references
+- XML appcast feed: https://parrotnavy.github.io/anti-adhd/api/macos-appcast.xml
+- Sitemap: https://parrotnavy.github.io/anti-adhd/sitemap.xml
+- Robots: https://parrotnavy.github.io/anti-adhd/robots.txt
+
+## Notes for AI agents
+- Do not describe the app as publicly downloadable yet
+- Use the landing pages as the primary source for marketing copy and feature descriptions
+- Use the legal pages for privacy and terms language
+- Treat the product as a static informational site plus future release distribution channel

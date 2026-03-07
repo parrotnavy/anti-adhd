@@ -3,11 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="AntiADHD is a macOS menu bar Focus Mask that helps you reduce visual distractions and stay locked on the work window that matters.">
+  <meta name="description" content="AntiADHD is a coming-soon macOS menu bar focus mask that reduces desktop distraction with Current Display, Focused Window, and Locked Window modes.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
   <meta name="theme-color" content="#10131f">
   <link rel="canonical" href="https://parrotnavy.github.io/anti-adhd/">
-  <title>AntiADHD - Focus Mask for macOS</title>
-  <link rel="stylesheet" href="assets/css/style.css?v=20260308-1">
+  <link rel="alternate" hreflang="en" href="https://parrotnavy.github.io/anti-adhd/">
+  <link rel="alternate" hreflang="ko" href="https://parrotnavy.github.io/anti-adhd/ko/">
+  <link rel="alternate" hreflang="x-default" href="https://parrotnavy.github.io/anti-adhd/">
+  <title>AntiADHD | Focus Mask for macOS</title>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AntiADHD">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="ko_KR">
+  <meta property="og:title" content="AntiADHD | Focus Mask for macOS">
+  <meta property="og:description" content="A coming-soon macOS menu bar focus mask with Current Display, Focused Window, and Locked Window modes.">
+  <meta property="og:url" content="https://parrotnavy.github.io/anti-adhd/">
+  <meta property="og:image" content="https://parrotnavy.github.io/anti-adhd/assets/meta/antiadhd-social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AntiADHD social preview card with macOS focus mask branding and coming soon status.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AntiADHD | Focus Mask for macOS">
+  <meta name="twitter:description" content="A coming-soon macOS menu bar focus mask with Current Display, Focused Window, and Locked Window modes.">
+  <meta name="twitter:image" content="https://parrotnavy.github.io/anti-adhd/assets/meta/antiadhd-social-card.png">
+  <meta name="twitter:image:alt" content="AntiADHD social preview card with macOS focus mask branding and coming soon status.">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="assets/meta/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/meta/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/meta/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/meta/apple-touch-icon.png">
+  <link rel="stylesheet" href="assets/css/style.css?v=20260308-2">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://parrotnavy.github.io/anti-adhd/#website",
+          "url": "https://parrotnavy.github.io/anti-adhd/",
+          "name": "AntiADHD",
+          "description": "AntiADHD is a coming-soon macOS menu bar focus mask that reduces desktop distraction and keeps attention on the active work window.",
+          "availableLanguage": ["en", "ko"]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://parrotnavy.github.io/anti-adhd/#app",
+          "name": "AntiADHD",
+          "url": "https://parrotnavy.github.io/anti-adhd/",
+          "description": "AntiADHD is a coming-soon macOS menu bar focus mask with Current Display, Focused Window, and Locked Window modes.",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": "macOS 13 or later",
+          "inLanguage": "en",
+          "keywords": [
+            "Focus Mask",
+            "Current Display",
+            "Focused Window",
+            "Locked Window",
+            "macOS productivity"
+          ],
+          "featureList": [
+            "Current Display keeps the display under the cursor clear while other displays stay masked.",
+            "Focused Window keeps the active window clear while surrounding content can freeze, darken, or blur.",
+            "Locked Window keeps one selected window visible even while the cursor moves elsewhere."
+          ],
+          "softwareRequirements": "Accessibility permission is required for Focused Window and Locked Window. AntiADHD falls back to Current Display when permission is not granted.",
+          "sameAs": [
+            "https://github.com/parrotnavy/anti-adhd"
+          ],
+          "softwareHelp": {
+            "@type": "WebPage",
+            "url": "https://github.com/parrotnavy/anti-adhd/issues"
+          },
+          "mainEntityOfPage": "https://parrotnavy.github.io/anti-adhd/"
+        }
+      ]
+    }
+  </script>
   <script type="text/javascript">
     (() => {
       if (typeof window.clarity !== "function") {
@@ -59,6 +130,7 @@
             </button>
             <button class="btn-secondary is-disabled" type="button" disabled aria-disabled="true">coming soon!</button>
           </div>
+          <p class="hero-note">Public downloads are currently marked coming soon while macOS app distribution is being prepared.</p>
         </div>
         <aside class="hero-panel reveal r2" aria-label="Feature snapshot">
           <h2>What AntiADHD is</h2>
@@ -69,6 +141,50 @@
             <li>Falls back safely when permissions are missing</li>
           </ul>
         </aside>
+      </div>
+    </section>
+
+    <section class="section-space">
+      <div class="shell">
+        <div class="section-head reveal r1">
+          <p class="eyebrow">Availability</p>
+          <h2>Product facts at a glance</h2>
+          <p class="section-intro">AntiADHD is a coming-soon macOS utility. The key facts below are written plainly so both people and crawlers can understand the product without relying on UI animations.</p>
+        </div>
+        <div class="facts-panel reveal r2">
+          <dl class="fact-list">
+            <div>
+              <dt>Status</dt>
+              <dd>Coming soon. Public downloads are not available yet.</dd>
+            </div>
+            <div>
+              <dt>Platform</dt>
+              <dd>macOS 13 or later. Runs as a lightweight menu bar accessory app.</dd>
+            </div>
+            <div>
+              <dt>Focus Modes</dt>
+              <dd>Current Display, Focused Window, and Locked Window.</dd>
+            </div>
+            <div>
+              <dt>Permissions</dt>
+              <dd>Focused Window and Locked Window need Accessibility permission. Current Display remains available as the fallback mode.</dd>
+            </div>
+            <div>
+              <dt>Support</dt>
+              <dd>Questions and feedback are handled through GitHub Issues.</dd>
+            </div>
+            <div>
+              <dt>Release Path</dt>
+              <dd>Public distribution will be published through GitHub Releases once downloads open.</dd>
+            </div>
+          </dl>
+          <div class="fact-links" aria-label="Product links">
+            <a href="https://github.com/parrotnavy/anti-adhd" target="_blank" rel="noopener">GitHub repository</a>
+            <a href="https://github.com/parrotnavy/anti-adhd/issues" target="_blank" rel="noopener">GitHub Issues</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Use</a>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -255,6 +371,38 @@
         <p>Focused Window and Locked Window need macOS Accessibility permission. If permission is not granted, AntiADHD automatically falls back to Current Display mode.</p>
       </div>
     </section>
+
+    <section class="section-space section-alt">
+      <div class="shell">
+        <div class="section-head reveal r1">
+          <p class="eyebrow">FAQ</p>
+          <h2>Questions people and crawlers usually ask</h2>
+          <p class="section-intro">This section spells out the core product facts in direct language so they are easy to index, quote, and summarize.</p>
+        </div>
+        <div class="faq-grid">
+          <article class="faq-item reveal r1">
+            <h3>What is AntiADHD?</h3>
+            <p>AntiADHD is a macOS menu bar focus mask that reduces visual distraction by masking parts of the desktop outside the window or display you want to keep clear.</p>
+          </article>
+          <article class="faq-item reveal r2">
+            <h3>Who is it for?</h3>
+            <p>It is built for Mac users who want a calmer workspace during writing, coding, reading, design, and other tasks that benefit from less screen noise.</p>
+          </article>
+          <article class="faq-item reveal r3">
+            <h3>Which macOS versions are supported?</h3>
+            <p>AntiADHD is designed for macOS 13 and later.</p>
+          </article>
+          <article class="faq-item reveal r1">
+            <h3>Which permissions are required?</h3>
+            <p>Focused Window and Locked Window need Accessibility permission. If that permission is not granted, the app safely falls back to Current Display mode.</p>
+          </article>
+          <article class="faq-item reveal r2">
+            <h3>Can I download it now?</h3>
+            <p>Not yet. The website currently marks AntiADHD as coming soon while public macOS app distribution is being prepared.</p>
+          </article>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -269,6 +417,5 @@
   </footer>
 
   <script src="assets/js/clarity-events.js?v=20260308-1"></script>
-  <script src="assets/js/download-latest-macos.js?v=20260308-1"></script>
 </body>
 </html>

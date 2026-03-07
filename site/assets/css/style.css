@@ -177,6 +177,8 @@ button:focus-visible {
 .permission-wrap,
 .focus-card,
 .hotkey-item,
+.facts-panel,
+.faq-item,
 .legal-wrap {
   border: 1px solid rgba(16, 19, 31, 0.1);
   border-radius: var(--radius-lg);
@@ -229,6 +231,18 @@ h3 {
   margin: 18px 0 0;
   color: var(--muted);
   font-size: 1.08rem;
+  max-width: 58ch;
+}
+
+.hero-note,
+.section-intro,
+.legal-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+
+.hero-note {
+  font-size: 0.96rem;
   max-width: 58ch;
 }
 
@@ -347,6 +361,10 @@ h3 {
 
 .section-head {
   margin-bottom: 24px;
+}
+
+.section-intro {
+  max-width: 70ch;
 }
 
 .card-grid {
@@ -913,6 +931,76 @@ kbd {
   max-width: 900px;
 }
 
+.facts-panel {
+  padding: 30px;
+}
+
+.fact-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.fact-list div {
+  padding: 18px;
+  border: 1px solid rgba(16, 19, 31, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.fact-list dt {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fact-list dd {
+  margin: 10px 0 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.fact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.fact-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(16, 19, 31, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.fact-links a:hover,
+.fact-links a:focus-visible {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.faq-item {
+  padding: 26px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
 .site-footer {
   border-top: 1px solid rgba(16, 19, 31, 0.12);
   padding: 26px 0 34px;
@@ -1005,7 +1093,9 @@ kbd {
   }
 
   .card-grid,
-  .hotkey-list {
+  .hotkey-list,
+  .fact-list,
+  .faq-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1035,6 +1125,8 @@ kbd {
   .hero-panel,
   .focus-card,
   .hotkey-item,
+  .facts-panel,
+  .faq-item,
   .permission-wrap,
   .legal-wrap {
     padding: 22px;

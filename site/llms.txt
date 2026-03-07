@@ -1,0 +1,21 @@
+# AntiADHD
+
+AntiADHD is a coming-soon macOS menu bar focus mask that reduces desktop distraction by masking everything except the display or window you want to keep clear.
+
+## Current status
+- Coming soon. Public downloads are not available yet.
+- Supported platform: macOS 13 or later.
+- Focus modes: Current Display, Focused Window, Locked Window.
+- Accessibility permission is required for Focused Window and Locked Window.
+
+## Canonical pages
+- English home: https://parrotnavy.github.io/anti-adhd/
+- Korean home: https://parrotnavy.github.io/anti-adhd/ko/
+- Privacy Policy (English): https://parrotnavy.github.io/anti-adhd/privacy.html
+- Terms of Use (English): https://parrotnavy.github.io/anti-adhd/terms.html
+
+## Support and technical links
+- GitHub repository: https://github.com/parrotnavy/anti-adhd
+- GitHub Issues: https://github.com/parrotnavy/anti-adhd/issues
+- Appcast feed: https://parrotnavy.github.io/anti-adhd/api/macos-appcast.xml
+- Expanded machine-readable brief: https://parrotnavy.github.io/anti-adhd/llms-full.txt
