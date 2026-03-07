@@ -55,7 +55,10 @@ swift run
 
 - 생성물: `dist/AntiADHD-X.Y.Z.dmg`, `dist/SHA256SUMS.txt`
 - VERSION 형식: `X.Y.Z`, `X.Y.Z-rc.1`, `main-abcdef0`
-- 기본값인 `CODE_SIGN_IDENTITY=-` 는 ad hoc 서명을 사용합니다. 이 방식은 macOS Accessibility/TCC 신뢰가 설치/업데이트 후 안정적으로 유지되지 않을 수 있으므로, 실제 배포 전 권한 동작 검증에는 정식 서명을 권장합니다.
+- `CODE_SIGN_IDENTITY` 를 명시하지 않으면 스크립트는 먼저 로컬 코드서명 인증서 `AntiADHD Local Sign` 을 찾고, 없으면 ad hoc 서명으로 폴백합니다.
+- 다른 로컬 인증서 이름을 쓰고 싶다면 `LOCAL_CODE_SIGN_IDENTITY="My Local Sign"` 으로 바꿀 수 있고, 특정 인증서를 직접 지정하려면 `CODE_SIGN_IDENTITY="인증서 이름"` 을 사용하면 됩니다.
+- `AntiADHD Local Sign` 은 Keychain Access > Certificate Assistant > Create a Certificate… 에서 self-signed `Code Signing` 인증서로 만들어 둘 수 있습니다.
+- ad hoc 서명은 macOS Accessibility/TCC 신뢰가 설치/업데이트 후 안정적으로 유지되지 않을 수 있으므로, 접근성 권한 동작 검증에는 로컬 코드서명 인증서를 권장합니다.
 
 CI/릴리즈에서도 동일한 스크립트를 사용합니다: `.github/workflows/ci.yml`, `.github/workflows/release.yml`
 

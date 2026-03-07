@@ -11,6 +11,7 @@ readonly APP_NAME="AntiADHD"
 readonly EXECUTABLE_NAME="AntiADHD"
 readonly MINIMUM_MACOS="13.0"
 readonly DEFAULT_BUNDLE_ID="com.parrotnavy.antiadhd"
+readonly DEFAULT_LOCAL_CODE_SIGN_IDENTITY="AntiADHD Local Sign"
 readonly DEFAULT_SPARKLE_FEED_URL="https://parrotnavy.github.io/anti-adhd/api/macos-appcast.xml"
 readonly DEFAULT_SPARKLE_PUBLIC_ED_KEY="pXA8Cv2XBe/5ug0CT2KItb84Hyh2Z2gdA3vh4bewycY="
 
@@ -30,6 +31,52 @@ warn() {
 fail() {
   printf 'ERROR: %s\n' "$1" >&2
   exit 1
+}
+
+find_code_sign_identity() {
+  local identity_name output line
+  identity_name="$1"
+
+  [[ -n "$identity_name" ]] || return 1
+
+  set -- find-identity -v -p codesigning
+  if [[ -n "${KEYCHAIN_PATH:-}" ]]; then
+    set -- "$@" "$KEYCHAIN_PATH"
+  fi
+
+  output="$(security "$@" 2>/dev/null || true)"
+  [[ -n "$output" ]] || return 1
+
+  while IFS= read -r line; do
+    if [[ "$line" == *"\"$identity_name\""* ]]; then
+      printf '%s\n' "$identity_name"
+      return 0
+    fi
+  done <<EOF
+$output
+EOF
+
+  return 1
+}
+
+resolve_code_sign_identity() {
+  local requested_identity resolved_identity
+  requested_identity="$1"
+
+  if [[ -n "$requested_identity" ]]; then
+    printf '%s\n' "$requested_identity"
+    return 0
+  fi
+
+  if resolved_identity="$(find_code_sign_identity "$LOCAL_CODE_SIGN_IDENTITY")"; then
+    log "Using local code signing identity: $resolved_identity"
+    printf '%s\n' "$resolved_identity"
+    return 0
+  fi
+
+  warn "Local code signing identity '$LOCAL_CODE_SIGN_IDENTITY' was not found; falling back to ad hoc signing."
+  warn "Create a self-signed Code Signing certificate named '$LOCAL_CODE_SIGN_IDENTITY', or set CODE_SIGN_IDENTITY explicitly."
+  printf '%s\n' "-"
 }
 
 normalize_version() {
@@ -322,7 +369,7 @@ maybe_notarize() {
 
   [[ -n "$key_path" && -n "$key_id" && -n "$issuer_id" ]] || fail "Notarization env vars must all be set"
   [[ -f "$key_path" ]] || fail "APPLE_NOTARY_KEY_P8_PATH not found at $key_path"
-  [[ "$CODE_SIGN_IDENTITY" != "-" ]] || fail "Notarization requires non-ad-hoc CODE_SIGN_IDENTITY"
+  [[ "$RESOLVED_CODE_SIGN_IDENTITY" != "-" ]] || fail "Notarization requires non-ad-hoc CODE_SIGN_IDENTITY"
 
   log "Submitting DMG for notarization"
   xcrun notarytool submit "$dmg_path" \
@@ -374,13 +421,15 @@ readonly INFO_PLIST="$CONTENTS_DIR/Info.plist"
 readonly APP_EXECUTABLE_PATH="$MACOS_DIR/$EXECUTABLE_NAME"
 readonly DMG_STAGE_DIR="$WORK_DIR/dmg-stage"
 readonly DMG_NAME="$APP_NAME-$VERSION.dmg"
-readonly CODE_SIGN_IDENTITY="${CODE_SIGN_IDENTITY:--}"
 readonly KEYCHAIN_PATH="${KEYCHAIN_PATH:-}"
+readonly LOCAL_CODE_SIGN_IDENTITY="${LOCAL_CODE_SIGN_IDENTITY:-$DEFAULT_LOCAL_CODE_SIGN_IDENTITY}"
+readonly CODE_SIGN_IDENTITY_INPUT="${CODE_SIGN_IDENTITY:-}"
+readonly RESOLVED_CODE_SIGN_IDENTITY="$(resolve_code_sign_identity "$CODE_SIGN_IDENTITY_INPUT")"
 
-if [[ "$CODE_SIGN_IDENTITY" == "-" ]]; then
+if [[ "$RESOLVED_CODE_SIGN_IDENTITY" == "-" ]]; then
   warn "Packaging with ad hoc signing (CODE_SIGN_IDENTITY=-)."
   warn "macOS Accessibility/TCC trust may not persist across installs, updates, or app replacements for ad hoc-signed builds."
-  warn "Use a real signing identity when validating production-like Accessibility permission behavior."
+  warn "Use a local self-signed certificate ('$LOCAL_CODE_SIGN_IDENTITY') or another explicit CODE_SIGN_IDENTITY when validating Accessibility permission behavior."
 fi
 
 rm -rf "$APP_BUNDLE" "$DMG_STAGE_DIR"
@@ -400,7 +449,7 @@ chmod 755 "$APP_EXECUTABLE_PATH"
 create_info_plist
 
 log "Embedding Swift runtime"
-embed_swift_runtime "$CODE_SIGN_IDENTITY"
+embed_swift_runtime "$RESOLVED_CODE_SIGN_IDENTITY"
 
 log "Embedding Sparkle.framework"
 embed_sparkle_framework
@@ -409,7 +458,7 @@ log "Ensuring executable rpath for Frameworks"
 ensure_frameworks_rpath "$APP_EXECUTABLE_PATH"
 
 log "Signing app bundle"
-sign_app_bundle "$CODE_SIGN_IDENTITY"
+sign_app_bundle "$RESOLVED_CODE_SIGN_IDENTITY"
 
 verify_arches "$APP_EXECUTABLE_PATH" "$TARGET_ARCHS"
 verify_minimum_os "$APP_EXECUTABLE_PATH"
