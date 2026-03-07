@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="AntiADHD는 macOS 메뉴바에서 동작하는 Focus Mask 앱으로, 시선 분산을 줄이고 현재 작업 창에 집중할 수 있게 도와줍니다.">
+  <meta name="description" content="AntiADHD는 macOS 메뉴바에서 실행되는 Focus Mask 앱으로, 주변 화면을 가려 지금 작업 중인 창에 더 집중할 수 있게 도와줍니다.">
   <meta name="theme-color" content="#10131f">
   <link rel="canonical" href="https://parrotnavy.github.io/anti-adhd/ko/">
   <title>AntiADHD - macOS 집중 마스크</title>
@@ -50,24 +50,24 @@
     <section class="hero section-space">
       <div class="shell hero-grid">
         <div class="hero-copy reveal r1">
-          <p class="eyebrow">macOS Focus Utility</p>
-          <h1>시야 잡음을 줄이고<br>지금 필요한 창만 남기세요.</h1>
-          <p class="lead">AntiADHD는 macOS 메뉴바에서 동작하는 Focus Mask 앱입니다. 화면의 나머지 영역을 마스킹해 현재 작업 창에 집중할 수 있도록 도와줍니다.</p>
+          <p class="eyebrow">macOS 집중 도구</p>
+          <h1>산만한 화면은 덜어내고<br>지금 필요한 창에만 집중하세요.</h1>
+          <p class="lead">AntiADHD는 macOS 메뉴바에서 실행되는 Focus Mask 앱입니다. 주변 화면을 가려 지금 작업 중인 창에 더 집중할 수 있게 도와줍니다.</p>
           <div class="hero-actions" id="download">
             <a class="btn-download" href="https://github.com/parrotnavy/anti-adhd/releases" data-download-os="macos" data-clarity-event="download_macos_click">
               <span class="btn-title">macOS 다운로드</span>
-              <span class="btn-sub">GitHub Releases 기본 링크</span>
+              <span class="btn-sub">릴리스 페이지에서 다운로드</span>
             </a>
             <a class="btn-secondary" href="https://github.com/parrotnavy/anti-adhd/releases" target="_blank" rel="noopener" data-clarity-event="download_release_notes_click">릴리스 보기</a>
           </div>
         </div>
         <aside class="hero-panel reveal r2" aria-label="기능 요약">
           <h2>AntiADHD란?</h2>
-          <p>전역 단축키로 오버레이를 제어하는 경량 메뉴바 앱이며, 창 단위 집중 모드를 지원합니다.</p>
+          <p>전역 단축키로 오버레이를 제어하는 가벼운 메뉴바 앱으로, 창 단위 집중 모드를 지원합니다.</p>
           <ul>
-            <li>macOS 13+ 지원</li>
-            <li>Dock 아이콘 없이 액세서리 앱으로 동작</li>
-            <li>권한 미허용 시 안전하게 폴백</li>
+            <li>macOS 13 이상 지원</li>
+            <li>Dock 아이콘 없이 메뉴바에서 실행</li>
+            <li>권한이 없으면 Current Display 모드로 안전하게 전환</li>
           </ul>
         </aside>
       </div>
@@ -77,20 +77,150 @@
       <div class="shell">
         <div class="section-head reveal r1">
           <p class="eyebrow">모드</p>
-          <h2>집중 방식에 맞춰 선택하세요</h2>
+          <h2>원하는 방식으로 집중하세요</h2>
         </div>
         <div class="card-grid">
           <article class="focus-card reveal r1">
+            <div class="mode-graphic mode-graphic-current" aria-hidden="true">
+              <svg class="mode-graphic-illustration" viewBox="0 0 320 170" focusable="false">
+                <rect class="graphic-shell" x="18" y="20" width="284" height="118" rx="24" />
+                <g class="display">
+                  <rect class="display-frame" x="34" y="34" width="108" height="68" rx="14" />
+                  <rect class="display-screen" x="42" y="42" width="92" height="52" rx="10" />
+                  <rect class="display-window" x="54" y="54" width="44" height="22" rx="6" />
+                  <rect class="display-line" x="54" y="82" width="64" height="5" rx="2.5" />
+                  <rect class="display-mask display-mask--left" x="42" y="42" width="92" height="52" rx="10" />
+                  <rect class="display-highlight display-highlight--left" x="42" y="42" width="92" height="52" rx="10" />
+                  <rect class="display-stand" x="77" y="104" width="22" height="8" rx="4" />
+                  <rect class="display-base" x="62" y="114" width="52" height="8" rx="4" />
+                </g>
+                <g class="display">
+                  <rect class="display-frame" x="178" y="34" width="108" height="68" rx="14" />
+                  <rect class="display-screen" x="186" y="42" width="92" height="52" rx="10" />
+                  <rect class="display-window" x="198" y="54" width="44" height="22" rx="6" />
+                  <rect class="display-line" x="198" y="82" width="64" height="5" rx="2.5" />
+                  <rect class="display-mask display-mask--right" x="186" y="42" width="92" height="52" rx="10" />
+                  <rect class="display-highlight display-highlight--right" x="186" y="42" width="92" height="52" rx="10" />
+                  <rect class="display-stand" x="221" y="104" width="22" height="8" rx="4" />
+                  <rect class="display-base" x="206" y="114" width="52" height="8" rx="4" />
+                </g>
+                <g class="current-display-pointer">
+                  <circle class="pointer-glow" cx="8" cy="8" r="20" />
+                  <path class="pointer-arrow" d="M0 0 L0 18 L5 13 L9 24 L14 21 L10 11 L19 11 Z" />
+                </g>
+              </svg>
+            </div>
             <h3>Current Display</h3>
-            <p>마우스가 있는 모니터만 보이게 하고, 나머지 디스플레이는 마스킹합니다.</p>
+            <p>커서가 있는 모니터만 선명하게 남기고, 다른 디스플레이는 가립니다.</p>
           </article>
           <article class="focus-card reveal r2">
+            <div class="mode-graphic mode-graphic-focused" aria-hidden="true">
+              <svg class="mode-graphic-illustration" viewBox="0 0 320 170" focusable="false">
+                <rect class="graphic-shell" x="18" y="20" width="284" height="118" rx="24" />
+                <rect class="desktop-stage" x="36" y="30" width="248" height="98" rx="20" />
+                <rect class="desktop-toolbar" x="36" y="30" width="248" height="16" rx="20" />
+                <circle class="toolbar-dot" cx="54" cy="38" r="2.5" />
+                <circle class="toolbar-dot" cx="64" cy="38" r="2.5" />
+                <circle class="toolbar-dot" cx="74" cy="38" r="2.5" />
+
+                <g class="window window-back">
+                  <rect class="window-panel" x="58" y="60" width="82" height="42" rx="10" />
+                  <rect class="window-chrome" x="58" y="60" width="82" height="12" rx="10" />
+                  <rect class="window-highlight" x="70" y="78" width="36" height="18" rx="5" />
+                  <rect class="window-line" x="112" y="80" width="16" height="5" rx="2.5" />
+                  <rect class="window-line" x="70" y="102" width="50" height="5" rx="2.5" />
+                </g>
+                <g class="window window-back">
+                  <rect class="window-panel" x="194" y="72" width="60" height="34" rx="10" />
+                  <rect class="window-chrome" x="194" y="72" width="60" height="12" rx="10" />
+                  <rect class="window-highlight" x="204" y="88" width="22" height="12" rx="5" />
+                  <rect class="window-line" x="232" y="90" width="12" height="4" rx="2" />
+                </g>
+
+                <g class="focus-freeze-layer">
+                  <rect class="focus-freeze-tint" x="36" y="46" width="248" height="82" rx="18" />
+                  <rect class="freeze-chip" x="218" y="58" width="34" height="18" rx="9" />
+                  <rect class="freeze-bar" x="228" y="63" width="4" height="8" rx="2" />
+                  <rect class="freeze-bar" x="236" y="63" width="4" height="8" rx="2" />
+                  <rect class="freeze-line" x="58" y="66" width="72" height="4" rx="2" />
+                  <rect class="freeze-line" x="58" y="76" width="48" height="4" rx="2" />
+                  <rect class="freeze-line" x="200" y="108" width="34" height="4" rx="2" />
+                </g>
+
+                <rect class="focus-dark-overlay" x="36" y="46" width="248" height="82" rx="18" />
+
+                <g class="focus-blur-layer">
+                  <rect class="focus-blur-haze" x="36" y="46" width="248" height="82" rx="18" />
+                  <g class="blur-copy">
+                    <rect class="window-panel" x="58" y="60" width="82" height="42" rx="10" />
+                    <rect class="window-panel" x="194" y="72" width="60" height="34" rx="10" />
+                  </g>
+                </g>
+
+                <g class="window active-window">
+                  <rect class="window-panel window-panel--active" x="112" y="54" width="110" height="56" rx="12" />
+                  <rect class="window-chrome window-chrome--active" x="112" y="54" width="110" height="14" rx="12" />
+                  <rect class="window-highlight" x="124" y="76" width="46" height="18" rx="5" />
+                  <rect class="window-line" x="178" y="78" width="26" height="5" rx="2.5" />
+                  <rect class="window-line" x="124" y="100" width="80" height="5" rx="2.5" />
+                  <rect class="active-window-outline" x="112" y="54" width="110" height="56" rx="12" />
+                </g>
+              </svg>
+              <div class="mode-graphic-steps">
+                <span class="mode-step mode-step-freeze">멈춤</span>
+                <span class="mode-step mode-step-dark">어둡게</span>
+                <span class="mode-step mode-step-blur">흐리게</span>
+              </div>
+            </div>
             <h3>Focused Window</h3>
-            <p>현재 포커스 창만 강조합니다. 비선택 영역은 Freeze, Black Overlay, Blur 방식으로 처리할 수 있습니다.</p>
+            <p>현재 창은 선명하게 두고, 주변 영역은 정지 화면처럼 유지하거나 어둡게 또는 흐리게 처리할 수 있습니다.</p>
           </article>
           <article class="focus-card reveal r3">
+            <div class="mode-graphic mode-graphic-locked" aria-hidden="true">
+              <svg class="mode-graphic-illustration" viewBox="0 0 320 170" focusable="false">
+                <rect class="graphic-shell" x="18" y="20" width="284" height="118" rx="24" />
+                <rect class="desktop-stage" x="36" y="30" width="248" height="98" rx="20" />
+                <rect class="desktop-toolbar" x="36" y="30" width="248" height="16" rx="20" />
+                <circle class="toolbar-dot" cx="54" cy="38" r="2.5" />
+                <circle class="toolbar-dot" cx="64" cy="38" r="2.5" />
+                <circle class="toolbar-dot" cx="74" cy="38" r="2.5" />
+
+                <g class="window locked-window">
+                  <rect class="window-panel window-panel--active" x="60" y="58" width="108" height="58" rx="12" />
+                  <rect class="window-chrome window-chrome--active" x="60" y="58" width="108" height="14" rx="12" />
+                  <rect class="window-highlight" x="74" y="80" width="46" height="20" rx="5" />
+                  <rect class="window-line" x="128" y="82" width="24" height="5" rx="2.5" />
+                  <rect class="window-line" x="74" y="106" width="64" height="5" rx="2.5" />
+                  <rect class="locked-window-outline" x="60" y="58" width="108" height="58" rx="12" />
+                </g>
+
+                <g class="window other-window other-window--top">
+                  <rect class="window-panel" x="198" y="54" width="60" height="34" rx="10" />
+                  <rect class="window-chrome" x="198" y="54" width="60" height="12" rx="10" />
+                  <rect class="window-highlight" x="208" y="70" width="22" height="12" rx="5" />
+                  <rect class="window-line" x="236" y="72" width="10" height="4" rx="2" />
+                </g>
+                <g class="window other-window other-window--bottom">
+                  <rect class="window-panel" x="188" y="94" width="78" height="30" rx="10" />
+                  <rect class="window-chrome" x="188" y="94" width="78" height="12" rx="10" />
+                  <rect class="window-highlight" x="198" y="110" width="30" height="10" rx="5" />
+                  <rect class="window-line" x="234" y="112" width="18" height="4" rx="2" />
+                </g>
+
+                <path class="pointer-route" d="M228 60 C246 62, 252 74, 238 88 S232 112, 246 118" />
+                <g class="locked-pointer">
+                  <circle class="pointer-glow" cx="8" cy="8" r="20" />
+                  <path class="pointer-arrow" d="M0 0 L0 18 L5 13 L9 24 L14 21 L10 11 L19 11 Z" />
+                </g>
+                <g class="lock-badge">
+                  <circle class="lock-badge-ring" cx="170" cy="54" r="15" />
+                  <rect class="lock-body" x="163" y="56" width="14" height="11" rx="3" />
+                  <path class="lock-shackle" d="M165 56 v-4 a5 5 0 0 1 10 0 v4" />
+                </g>
+              </svg>
+            </div>
             <h3>Locked Window</h3>
-            <p>선택한 창을 고정 대상으로 유지하여 커서 이동과 관계없이 계속 보이게 합니다.</p>
+            <p>하나의 창을 고정해 두면, 커서를 다른 창으로 옮겨도 그 창은 계속 선명하게 유지됩니다.</p>
           </article>
         </div>
       </div>
@@ -100,20 +230,20 @@
       <div class="shell">
         <div class="section-head reveal r1">
           <p class="eyebrow">단축키</p>
-          <h2>작업 흐름을 끊지 않는 제어</h2>
+          <h2>흐름을 끊지 않는 빠른 제어</h2>
         </div>
         <div class="hotkey-list">
           <div class="hotkey-item reveal r1">
             <kbd>⌥⌘B</kbd>
-            <p>집중 마스크 On/Off 전환</p>
+            <p>집중 마스크 켜기/끄기</p>
           </div>
           <div class="hotkey-item reveal r2">
             <kbd>⌥⌘L</kbd>
-            <p>현재 포커스 창 잠금</p>
+            <p>현재 창 잠그기</p>
           </div>
           <div class="hotkey-item reveal r3">
             <kbd>⌥⌘⎋</kbd>
-            <p>긴급 해제로 오버레이 즉시 해제</p>
+            <p>오버레이 즉시 끄기</p>
           </div>
         </div>
       </div>
@@ -122,8 +252,8 @@
     <section id="permissions" class="section-space">
       <div class="shell permission-wrap reveal r1">
         <p class="eyebrow">권한</p>
-        <h2>창 모드 사용 시 Accessibility 권한 필요</h2>
-        <p>Focused Window와 Locked Window 모드는 손쉬운 사용(Accessibility) 권한이 필요합니다. 권한이 없으면 앱은 자동으로 Current Display 모드로 전환됩니다.</p>
+        <h2>창 모드를 사용하려면 Accessibility 권한이 필요합니다</h2>
+        <p>Focused Window와 Locked Window를 사용하려면 손쉬운 사용(Accessibility) 권한이 필요합니다. 권한이 없으면 AntiADHD는 자동으로 Current Display 모드로 전환됩니다.</p>
       </div>
     </section>
   </main>

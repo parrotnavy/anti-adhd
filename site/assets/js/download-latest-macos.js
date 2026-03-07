@@ -3,6 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const latestReleaseApiUrl =
     "https://api.github.com/repos/parrotnavy/anti-adhd/releases/latest";
   const assetNameRegex = /^AntiADHD-(\d+\.\d+\.\d+)\.dmg$/;
+  const pageLanguage = document.documentElement.lang?.toLowerCase() || "";
+  const fallbackSubLabel =
+    pageLanguage === "ko" ? "릴리스 페이지에서 다운로드" : "GitHub Releases fallback";
 
   const links = document.querySelectorAll('[data-download-os="macos"]');
 
@@ -19,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const subLabel = link.querySelector(".btn-sub");
       if (subLabel) {
-        subLabel.textContent = "GitHub Releases fallback";
+        subLabel.textContent = fallbackSubLabel;
       }
     });
   };
