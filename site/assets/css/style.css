@@ -289,6 +289,40 @@ h3 {
   background: rgba(255, 255, 255, 0.96);
 }
 
+.btn-download.is-disabled,
+.btn-secondary.is-disabled,
+.btn-download:disabled,
+.btn-secondary:disabled {
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-download.is-disabled,
+.btn-download:disabled {
+  background: linear-gradient(160deg, #9ea7b8, #8e97a7 62%, #7c8494);
+  border-color: rgba(16, 19, 31, 0.14);
+  color: rgba(247, 251, 255, 0.96);
+}
+
+.btn-secondary.is-disabled,
+.btn-secondary:disabled {
+  background: rgba(255, 255, 255, 0.52);
+  border-color: rgba(16, 19, 31, 0.12);
+  color: rgba(29, 36, 53, 0.62);
+}
+
+.btn-download.is-disabled:hover,
+.btn-download.is-disabled:focus-visible,
+.btn-secondary.is-disabled:hover,
+.btn-secondary.is-disabled:focus-visible,
+.btn-download:disabled:hover,
+.btn-download:disabled:focus-visible,
+.btn-secondary:disabled:hover,
+.btn-secondary:disabled:focus-visible {
+  transform: none;
+}
+
 .hero-panel {
   padding: 30px;
   display: grid;
