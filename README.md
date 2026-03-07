@@ -32,6 +32,9 @@ swift build
 swift run
 ```
 
+- `swift run` 으로 실행한 개발용 바이너리는 설치된 `.app` 번들과 별도의 macOS 권한 대상으로 취급될 수 있습니다.
+- Accessibility 권한 유지 여부까지 확인해야 한다면 `/Applications/AntiADHD.app` 같은 실제 앱 번들로 테스트하는 편이 안전합니다.
+
 ## 권한
 창 모드(`Focused/Locked`)는 **Accessibility 권한**이 필요합니다.
 - 메뉴에서 `Request Accessibility Permission` 클릭
@@ -52,6 +55,7 @@ swift run
 
 - 생성물: `dist/AntiADHD-X.Y.Z.dmg`, `dist/SHA256SUMS.txt`
 - VERSION 형식: `X.Y.Z`, `X.Y.Z-rc.1`, `main-abcdef0`
+- 기본값인 `CODE_SIGN_IDENTITY=-` 는 ad hoc 서명을 사용합니다. 이 방식은 macOS Accessibility/TCC 신뢰가 설치/업데이트 후 안정적으로 유지되지 않을 수 있으므로, 실제 배포 전 권한 동작 검증에는 정식 서명을 권장합니다.
 
 CI/릴리즈에서도 동일한 스크립트를 사용합니다: `.github/workflows/ci.yml`, `.github/workflows/release.yml`
 

@@ -47,3 +47,35 @@ enum HotKeyAction: UInt32 {
     case lockWindow = 2
     case emergencyOff = 3
 }
+
+struct AccessibilityPermissionMenuState: Equatable {
+    let isGranted: Bool
+
+    var permissionStatusTitle: String {
+        isGranted ? "Accessibility: Granted" : "Accessibility: Needed for window modes"
+    }
+
+    var requestPermissionEnabled: Bool {
+        !isGranted
+    }
+
+    var focusedWindowModeEnabled: Bool {
+        isGranted
+    }
+
+    var lockedWindowModeEnabled: Bool {
+        isGranted
+    }
+
+    var lockCurrentWindowEnabled: Bool {
+        isGranted
+    }
+}
+
+struct AccessibilityPermissionMenuSnapshot: Equatable {
+    let permissionStatusTitle: String
+    let requestPermissionEnabled: Bool
+    let focusedWindowModeEnabled: Bool
+    let lockedWindowModeEnabled: Bool
+    let lockCurrentWindowEnabled: Bool
+}

@@ -4,21 +4,28 @@ import Foundation
 
 @MainActor
 final class AppCoordinator: NSObject {
-    private static let automaticUpdateChecksPreferenceKey = "SUEnableAutomaticChecks"
+    nonisolated private static let automaticUpdateChecksPreferenceKey = "SUEnableAutomaticChecks"
 
     private let overlayManager = OverlayManager()
-    private let accessibilityService = AccessibilityService()
+    private let accessibilityService: AccessibilityServicing
     private let hotKeyManager = HotKeyManager()
-    private let updateService = UpdateService(
-        automaticallyChecksForUpdates: AppCoordinator.automaticUpdateChecksPreferenceOrDefault()
-    )
+    private let updateService: UpdateService
+    private let notificationCenter: NotificationCenter
+    private let automaticUpdateChecksProvider: () -> Bool
+    private let now: () -> Date
+    private let permissionRefreshInterval: TimeInterval
+    private let permissionRefreshDuration: TimeInterval
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let menu = NSMenu()
 
     private var refreshTimer: Timer?
+    private var permissionRefreshTimer: Timer?
+    private var permissionRefreshDeadline: Date?
+    private var isObservingApplicationActivity = false
 
     private var isOverlayEnabled = false
+    private var hasAccessibilityPermission = false
     private var overlayMode: OverlayMode = .currentDisplay
     private var lockedTarget: WindowTarget?
     private var focusedBackdropStyle: FocusedWindowBackdropStyle = .blackOverlay
@@ -57,7 +64,7 @@ final class AppCoordinator: NSObject {
         blackOpacity100MenuItem
     ]
 
-    private static func automaticUpdateChecksPreferenceOrDefault() -> Bool {
+    nonisolated private static func automaticUpdateChecksPreferenceOrDefault() -> Bool {
         let defaults = UserDefaults.standard
         let key = automaticUpdateChecksPreferenceKey
 
@@ -68,15 +75,41 @@ final class AppCoordinator: NSObject {
         return defaults.bool(forKey: key)
     }
 
+    init(
+        accessibilityService: AccessibilityServicing = AccessibilityService(),
+        notificationCenter: NotificationCenter = .default,
+        automaticUpdateChecksProvider: @escaping () -> Bool = AppCoordinator.automaticUpdateChecksPreferenceOrDefault,
+        now: @escaping () -> Date = Date.init,
+        permissionRefreshInterval: TimeInterval = 0.5,
+        permissionRefreshDuration: TimeInterval = 8.0
+    ) {
+        let sanitizedRefreshInterval = max(permissionRefreshInterval, 0.2)
+
+        self.accessibilityService = accessibilityService
+        self.notificationCenter = notificationCenter
+        self.automaticUpdateChecksProvider = automaticUpdateChecksProvider
+        self.now = now
+        self.permissionRefreshInterval = sanitizedRefreshInterval
+        self.permissionRefreshDuration = max(permissionRefreshDuration, sanitizedRefreshInterval)
+        self.updateService = UpdateService(
+            automaticallyChecksForUpdates: automaticUpdateChecksProvider()
+        )
+
+        super.init()
+    }
+
     func start() {
         configureStatusItem()
         configureMenu()
         configureHotKeys()
-        updateUIState()
+        startObservingApplicationActivity()
+        syncAccessibilityPermissionState()
     }
 
     func stop() {
         stopRefreshLoop()
+        stopPermissionRefreshWindow()
+        stopObservingApplicationActivity()
         overlayManager.setEnabled(false)
     }
 
@@ -201,6 +234,97 @@ final class AppCoordinator: NSObject {
         }
     }
 
+    private func startObservingApplicationActivity() {
+        guard !isObservingApplicationActivity else { return }
+
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleApplicationDidBecomeActive(_:)),
+            name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        isObservingApplicationActivity = true
+    }
+
+    private func stopObservingApplicationActivity() {
+        guard isObservingApplicationActivity else { return }
+
+        notificationCenter.removeObserver(
+            self,
+            name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        isObservingApplicationActivity = false
+    }
+
+    @discardableResult
+    private func syncAccessibilityPermissionState(updateUI: Bool = true) -> Bool {
+        let previousPermission = hasAccessibilityPermission
+        hasAccessibilityPermission = accessibilityService.isTrusted
+
+        if hasAccessibilityPermission {
+            stopPermissionRefreshWindow()
+        } else {
+            lockedTarget = nil
+            if overlayMode != .currentDisplay {
+                overlayMode = .currentDisplay
+            }
+        }
+
+        if updateUI {
+            updateUIState()
+        }
+
+        return previousPermission != hasAccessibilityPermission
+    }
+
+    @discardableResult
+    private func ensureAccessibilityPermission(prompt: Bool) -> Bool {
+        guard hasAccessibilityPermission == false else {
+            return true
+        }
+
+        guard prompt else {
+            return false
+        }
+
+        let granted = accessibilityService.requestPermission()
+        if granted == false {
+            startPermissionRefreshWindow()
+        }
+
+        syncAccessibilityPermissionState(updateUI: false)
+        return hasAccessibilityPermission
+    }
+
+    private func startPermissionRefreshWindow() {
+        permissionRefreshDeadline = now().addingTimeInterval(permissionRefreshDuration)
+
+        guard permissionRefreshTimer == nil else { return }
+
+        permissionRefreshTimer = Timer.scheduledTimer(
+            timeInterval: permissionRefreshInterval,
+            target: self,
+            selector: #selector(handlePermissionRefreshTimer(_:)),
+            userInfo: nil,
+            repeats: true
+        )
+
+        if let permissionRefreshTimer {
+            RunLoop.main.add(permissionRefreshTimer, forMode: .common)
+        }
+    }
+
+    private func stopPermissionRefreshWindow() {
+        permissionRefreshTimer?.invalidate()
+        permissionRefreshTimer = nil
+        permissionRefreshDeadline = nil
+    }
+
+    private func currentAccessibilityPermissionMenuState() -> AccessibilityPermissionMenuState {
+        AccessibilityPermissionMenuState(isGranted: hasAccessibilityPermission)
+    }
+
     private func ensureRefreshLoopRunning() {
         guard refreshTimer == nil else { return }
 
@@ -227,6 +351,31 @@ final class AppCoordinator: NSObject {
         refreshTimer = nil
     }
 
+    @objc
+    private func handleApplicationDidBecomeActive(_ notification: Notification) {
+        syncAccessibilityPermissionState(updateUI: false)
+
+        if isOverlayEnabled {
+            refreshOverlayIfNeeded()
+        }
+
+        updateUIState()
+    }
+
+    @objc
+    private func handlePermissionRefreshTimer(_ timer: Timer) {
+        syncAccessibilityPermissionState()
+
+        guard hasAccessibilityPermission == false else {
+            return
+        }
+
+        guard let permissionRefreshDeadline, now() < permissionRefreshDeadline else {
+            stopPermissionRefreshWindow()
+            return
+        }
+    }
+
     private func refreshOverlayIfNeeded() {
         guard isOverlayEnabled else {
             return
@@ -239,7 +388,7 @@ final class AppCoordinator: NSObject {
             overlayManager.focusDisplay(accessibilityService.activeScreenByMouse())
 
         case .focusedWindow:
-            guard accessibilityService.hasPermission() else {
+            guard hasAccessibilityPermission else {
                 overlayMode = .currentDisplay
                 updateUIState()
                 overlayManager.focusDisplay(accessibilityService.activeScreenByMouse())
@@ -257,7 +406,7 @@ final class AppCoordinator: NSObject {
             }
 
         case .lockedWindow:
-            guard accessibilityService.hasPermission() else {
+            guard hasAccessibilityPermission else {
                 overlayMode = .currentDisplay
                 lockedTarget = nil
                 updateUIState()
@@ -317,17 +466,18 @@ final class AppCoordinator: NSObject {
     }
 
     private func switchMode(_ mode: OverlayMode) {
+        syncAccessibilityPermissionState(updateUI: false)
+
+        if mode != .currentDisplay, ensureAccessibilityPermission(prompt: true) == false {
+            refreshOverlayIfNeeded()
+            updateUIState()
+            return
+        }
+
         overlayMode = mode
 
         if mode == .lockedWindow, lockedTarget == nil {
             lockedTarget = accessibilityService.focusedWindowTarget()
-        }
-
-        if mode != .currentDisplay {
-            let granted = accessibilityService.hasPermission(prompt: true)
-            if !granted {
-                overlayMode = .currentDisplay
-            }
         }
 
         if overlayMode == .focusedWindow, focusedBackdropStyle == .frozenFrame {
@@ -381,10 +531,14 @@ final class AppCoordinator: NSObject {
             lockWindowMenuItem.title = "Lock Current Window (⌥⌘L)"
         }
 
-        let hasPermission = accessibilityService.hasPermission()
-        permissionStatusMenuItem.title = hasPermission ? "Accessibility: Granted" : "Accessibility: Needed for window modes"
+        let permissionMenuState = currentAccessibilityPermissionMenuState()
+        permissionStatusMenuItem.title = permissionMenuState.permissionStatusTitle
+        requestPermissionMenuItem.isEnabled = permissionMenuState.requestPermissionEnabled
+        modeFocusedMenuItem.isEnabled = permissionMenuState.focusedWindowModeEnabled
+        modeLockedMenuItem.isEnabled = permissionMenuState.lockedWindowModeEnabled
+        lockWindowMenuItem.isEnabled = permissionMenuState.lockCurrentWindowEnabled
 
-        automaticUpdateChecksMenuItem.state = AppCoordinator.automaticUpdateChecksPreferenceOrDefault() ? .on : .off
+        automaticUpdateChecksMenuItem.state = automaticUpdateChecksProvider() ? .on : .off
 
         statusItem.button?.title = isOverlayEnabled ? "● Focus" : "○ Focus"
     }
@@ -445,7 +599,9 @@ final class AppCoordinator: NSObject {
 
     @objc
     private func lockCurrentWindow() {
-        guard accessibilityService.hasPermission(prompt: true) else {
+        syncAccessibilityPermissionState(updateUI: false)
+
+        guard ensureAccessibilityPermission(prompt: true) else {
             updateUIState()
             return
         }
@@ -472,12 +628,33 @@ final class AppCoordinator: NSObject {
 
     @objc
     private func requestAccessibilityPermission() {
-        _ = accessibilityService.hasPermission(prompt: true)
-        updateUIState()
+        if accessibilityService.requestPermission() == false {
+            startPermissionRefreshWindow()
+        }
+
+        syncAccessibilityPermissionState()
     }
 
     @objc
     private func quitApp() {
         NSApp.terminate(nil)
+    }
+
+    func syncAccessibilityPermissionStateForTesting() {
+        syncAccessibilityPermissionState()
+    }
+
+    func simulateApplicationDidBecomeActiveForTesting() {
+        handleApplicationDidBecomeActive(Notification(name: NSApplication.didBecomeActiveNotification))
+    }
+
+    func permissionMenuSnapshotForTesting() -> AccessibilityPermissionMenuSnapshot {
+        AccessibilityPermissionMenuSnapshot(
+            permissionStatusTitle: permissionStatusMenuItem.title,
+            requestPermissionEnabled: requestPermissionMenuItem.isEnabled,
+            focusedWindowModeEnabled: modeFocusedMenuItem.isEnabled,
+            lockedWindowModeEnabled: modeLockedMenuItem.isEnabled,
+            lockCurrentWindowEnabled: lockWindowMenuItem.isEnabled
+        )
     }
 }

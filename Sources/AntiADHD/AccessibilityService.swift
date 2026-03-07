@@ -1,13 +1,59 @@
 import AppKit
 import ApplicationServices
 
-final class AccessibilityService {
+protocol AccessibilityServicing: AnyObject {
+    var isTrusted: Bool { get }
+
+    @discardableResult
+    func requestPermission() -> Bool
+
+    func focusedWindowTarget() -> WindowTarget?
+    func frame(of window: AXUIElement) -> CGRect?
+    func activeScreenByMouse() -> NSScreen?
+}
+
+final class AccessibilityService: AccessibilityServicing {
     private let trustedCheckOptionPromptKey = "AXTrustedCheckOptionPrompt"
     private let systemWide = AXUIElementCreateSystemWide()
+    private let promptCooldown: TimeInterval
+    private var lastPromptDate: Date?
+    private let trustedCheck: () -> Bool
+    private let trustedCheckWithOptions: (CFDictionary) -> Bool
+    private let now: () -> Date
+
+    init(
+        promptCooldown: TimeInterval = 2.0,
+        trustedCheck: @escaping () -> Bool = { AXIsProcessTrusted() },
+        trustedCheckWithOptions: @escaping (CFDictionary) -> Bool = { AXIsProcessTrustedWithOptions($0) },
+        now: @escaping () -> Date = Date.init
+    ) {
+        self.promptCooldown = max(promptCooldown, 0)
+        self.trustedCheck = trustedCheck
+        self.trustedCheckWithOptions = trustedCheckWithOptions
+        self.now = now
+    }
+
+    var isTrusted: Bool {
+        trustedCheck()
+    }
+
+    @discardableResult
+    func requestPermission() -> Bool {
+        if isTrusted {
+            return true
+        }
+
+        guard canPromptNow() else {
+            return false
+        }
+
+        lastPromptDate = now()
+        let options = [trustedCheckOptionPromptKey: true] as CFDictionary
+        return trustedCheckWithOptions(options)
+    }
 
     func hasPermission(prompt: Bool = false) -> Bool {
-        let options = [trustedCheckOptionPromptKey: prompt] as CFDictionary
-        return AXIsProcessTrustedWithOptions(options)
+        prompt ? requestPermission() : isTrusted
     }
 
     func focusedWindowTarget() -> WindowTarget? {
@@ -81,5 +127,13 @@ final class AccessibilityService {
             width: accessibilityRect.width,
             height: accessibilityRect.height
         )
+    }
+
+    private func canPromptNow() -> Bool {
+        guard let lastPromptDate else {
+            return true
+        }
+
+        return now().timeIntervalSince(lastPromptDate) >= promptCooldown
     }
 }

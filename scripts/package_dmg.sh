@@ -23,6 +23,10 @@ log() {
   printf '==> %s\n' "$1" >&2
 }
 
+warn() {
+  printf 'WARNING: %s\n' "$1" >&2
+}
+
 fail() {
   printf 'ERROR: %s\n' "$1" >&2
   exit 1
@@ -372,6 +376,12 @@ readonly DMG_STAGE_DIR="$WORK_DIR/dmg-stage"
 readonly DMG_NAME="$APP_NAME-$VERSION.dmg"
 readonly CODE_SIGN_IDENTITY="${CODE_SIGN_IDENTITY:--}"
 readonly KEYCHAIN_PATH="${KEYCHAIN_PATH:-}"
+
+if [[ "$CODE_SIGN_IDENTITY" == "-" ]]; then
+  warn "Packaging with ad hoc signing (CODE_SIGN_IDENTITY=-)."
+  warn "macOS Accessibility/TCC trust may not persist across installs, updates, or app replacements for ad hoc-signed builds."
+  warn "Use a real signing identity when validating production-like Accessibility permission behavior."
+fi
 
 rm -rf "$APP_BUNDLE" "$DMG_STAGE_DIR"
 mkdir -p "$DIST_DIR" "$WORK_DIR" "$MACOS_DIR" "$FRAMEWORKS_DIR"
